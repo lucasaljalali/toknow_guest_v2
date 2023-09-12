@@ -1,0 +1,8 @@
+{
+    "FILTER_LABEL_QTD": "Qtd.",
+    "FILTER_LABEL_NAME": "Name",
+    "FILTER_LABEL_PRIORITY": "Priority",
+    "FILTER_LABEL_WAITING": "Waiting",
+    "FILTER_LABEL_ESTIMATED": "Estimated",
+    "FILTER_LABEL_DEVICE": "Device"
+}
