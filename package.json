@@ -13,10 +13,12 @@
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@fontsource/roboto": "^5.0.8",
+    "@mui/base": "^5.0.0-beta.15",
     "@mui/icons-material": "^5.14.8",
     "@mui/lab": "^5.0.0-alpha.143",
     "@mui/material": "^5.14.8",
     "@react-keycloak/web": "^3.4.0",
+    "@use-gesture/react": "^10.2.27",
     "axios": "^1.5.0",
     "i18next": "^23.5.1",
     "keycloak-js": "^22.0.2",
@@ -24,7 +26,8 @@
     "react-dom": "^18.2.0",
     "react-i18next": "^13.2.2",
     "react-query": "^3.39.3",
-    "react-router-dom": "^6.15.0"
+    "react-router-dom": "^6.15.0",
+    "react-spring": "^9.7.2"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { useQuery } from "react-query";
+import { QueryObserverResult, RefetchOptions, RefetchQueryFilters, useQuery } from "react-query";
 import { axiosInstance } from "../services/api/baseConfigs";
 import { InCompanyConfigs } from "../services/api/dtos/CompanyConfigs";
 import keycloak from "../services/keycloak/keycloak";
@@ -21,6 +21,9 @@ interface CompanyContextData {
   user: KeycloakTokenParsed | undefined;
   updateCompany: Function;
   updateLocale: Function;
+  refetchConfigs: (
+    options?: (RefetchOptions & RefetchQueryFilters<unknown>) | undefined
+  ) => Promise<QueryObserverResult<any, unknown>>;
 }
 
 export function CompanyProvider({ children }: Props) {
@@ -70,6 +73,7 @@ export function CompanyProvider({ children }: Props) {
   async function handleTokenRefresh() {
     try {
       const refreshed = await keycloak.updateToken(5);
+      handleSetInitialConfigs();
       console.log(refreshed ? "Token has been refreshed" : "Token refresh failed");
     } catch (error) {
       console.error("Error refreshing token:", error);
@@ -105,6 +109,7 @@ export function CompanyProvider({ children }: Props) {
     user,
     updateCompany,
     updateLocale,
+    refetchConfigs,
   };
 
   return <CompanyContext.Provider value={value}>{user && companyConfigs ? children : <Loading />}</CompanyContext.Provider>;

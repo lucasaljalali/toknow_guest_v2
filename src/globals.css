@@ -57,7 +57,7 @@
 html,
 body {
   width: var(--max-width-mobile);
-  overflow: hidden;
+  overflow-y: hidden;
 }
 
 body {
@@ -117,17 +117,16 @@ a {
   box-shadow: var(--shadow-raised);
 }
 
-.MuiIconButton-root:is(.partySizeTag) {
+.MuiTypography-root:is(.partySizeTag) {
   width: 3rem;
   height: 3rem;
+  border-radius: 50%;
+  text-align: center;
   background: #2A442A;
-}
-
-.MuiIconButton-root:is(.partySizeTag) p {
   color: var(--text-color-unique-light);
 }
 
-.MuiIconButton-root:is(.roundedPrimaryIconButton) svg, .MuiIconButton-root:is(.roundedSecondaryIconButton) svg, .MuiIconButton-root:is(.partySizeTag) p {
+.MuiIconButton-root:is(.roundedPrimaryIconButton) svg, .MuiIconButton-root:is(.roundedSecondaryIconButton) svg, .MuiTypography-root:is(.partySizeTag) {
   font-size: 2rem;
 }
 
@@ -158,7 +157,7 @@ a {
   font-size: 1rem;
 }
 
-.queueCardContainer {
+.queueLongCardContainer {
   height: 6rem;
   width: 100%;
   display: flex;
@@ -198,13 +197,13 @@ a {
   transition: .2s;
 }
 
-.deviceIcon:hover {
+.deviceIcon:is(.active) {
   box-shadow: var(--primary-color-main) 0px 0 2px 2px;
 }
 
 .deviceIcon h1 {
-  width: 4.25rem;
-  height: 4.25rem;
+  width: 80%;
+  height: 80%;
   background: var(--background-color-device);
   color: var(--text-color-unique-light);
   border: 2px solid rgb(245, 245, 245, 0.75);
@@ -229,4 +228,47 @@ a {
 
 .deviceIcon i {
   font-size: 2.5rem;
+}
+
+.topBarDevicesOptionsContainer {
+  position: absolute;
+  height: 5rem;
+  width: fit-content;
+  max-width: calc(100vw - 7rem);
+  left: 5rem;
+  z-index: 2;
+  border-radius: var(--border-radius);
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  pointer-events: none;
+  background: var(--background-color-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1.5rem;
+  padding: .5rem 1.5rem;
+  overflow-y: hidden;
+  overflow-x: auto;
+  -ms-overflow-style: none;  
+  scrollbar-width: none;
+}
+
+.topBarDevicesOptionsContainer.active {
+  opacity: 1;
+  pointer-events: initial;
+}
+
+.topBarDevicesOptionsContainer::-webkit-scrollbar {
+  display: none;
+}
+
+.topBarAddDeviceButton {
+  padding: 0;
+  margin: 0;
+  min-width: fit-content;
+}
+
+.topBarAddDeviceButton .deviceIcon {
+  width: 4.25rem;
+  height: 4.25rem;
 }
