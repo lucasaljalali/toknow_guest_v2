@@ -1,7 +1,6 @@
-import { MutableRefObject, createContext, useContext, useEffect, useRef, useState } from "react";
+import { MutableRefObject, createContext, useContext, useRef, useState } from "react";
 import { axiosInstance } from "../services/api/baseConfigs";
 import { useQuery } from "react-query";
-import { useCompany } from "./CompanyContext";
 import { InQueueItem } from "../services/api/dtos/Queue";
 
 const QueueContext = createContext({} as QueueContextData);
