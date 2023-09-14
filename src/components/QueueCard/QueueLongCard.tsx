@@ -3,6 +3,7 @@ import { InQueueItem } from "../../services/api/dtos/Queue";
 import { Typography } from "@mui/material";
 import { useQueue } from "../../contexts/QueueContext";
 import PagerCard from "../PagerCard/PagerCard";
+import { useCompany } from "../../contexts/CompanyContext";
 
 interface IQueueLongCard {
   data: InQueueItem;
@@ -10,15 +11,20 @@ interface IQueueLongCard {
 
 export default function QueueLongCard({ data }: IQueueLongCard) {
   const { notifyQueue, notifyQueueRequestBody } = useQueue();
+  const { companyConfigs } = useCompany();
   const partySize = data?.carPlate; //workaround to use premium api
   const name = data?.driverName; //workaround to use premium api
-  const estimateTime = data?.observations; //workaround to use premium api
-  const priorities = data?.priorities;
+  const estimateDate = data?.observations; //workaround to use premium api
+  const priorities = data?.priorities?.map(
+    (priority) => companyConfigs?.formFieldsData?.priorities?.find((item) => item.id === priority)?.label
+  );
   const createdDate = data.createdDate && new Date(data.createdDate);
   const currentDate = new Date();
   const waitingTimeInMs = createdDate && currentDate.getTime() - createdDate.getTime();
   const waitingTimeInMinutes = waitingTimeInMs && Math.floor(waitingTimeInMs / (1000 * 60));
-  const lastNotification = data?.history?.reverse()?.find((action) => action.actionId === 2);
+  const estimateTimeInMs = estimateDate && createdDate && new Date(estimateDate).getTime() - createdDate.getTime();
+  const estimateTimeInMinutes = estimateTimeInMs ? Math.floor(estimateTimeInMs / (1000 * 60)) : undefined;
+  const lastNotification = data?.history?.find((action) => action.actionId === 2);
   const lastNotificationTime = lastNotification?.createdDate;
   const lastNotificationTimeInMs = lastNotificationTime && currentDate.getTime() - new Date(lastNotificationTime).getTime();
   const lastNotificationTimeInMinutes = lastNotificationTimeInMs ? Math.floor(lastNotificationTimeInMs / (1000 * 60)) : undefined;
@@ -55,18 +61,18 @@ export default function QueueLongCard({ data }: IQueueLongCard) {
       </div>
       <div className="queueCardItem">
         <div className="arrayToStringLines">
-          {priorities?.map((priority) => (
-            <Typography key={priority} variant="caption">
+          {priorities?.map((priority, index) => (
+            <Typography key={index} variant="caption">
               {priority}
             </Typography>
           ))}
         </div>
       </div>
       <div className="queueCardItem">
-        <Typography variant="h5">{`${waitingTimeInMinutes}m`}</Typography>
+        <Typography variant="h5">{waitingTimeInMinutes ? `${waitingTimeInMinutes}m` : undefined}</Typography>
       </div>
       <div className="queueCardItem">
-        <Typography variant="h5">{estimateTime}</Typography>
+        <Typography variant="h5">{estimateTimeInMinutes ? `${estimateTimeInMinutes}m` : undefined}</Typography>
       </div>
       <div className="queueCardItem" onClick={handleClick}>
         <PagerCard

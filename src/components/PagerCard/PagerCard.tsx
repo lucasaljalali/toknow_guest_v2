@@ -12,7 +12,7 @@ export default function PagerCard({ useSMS, deviceLabel, lastNotificationTimeInM
     <div className="deviceIcon">
       <Typography variant="h1" style={{ background: notifed ? "#22657A" : undefined }}>
         {useSMS ? <i className="pi pi-phone"></i> : deviceLabel}
-        <Typography variant="caption">{lastNotificationTimeInMinutes}</Typography>
+        {lastNotificationTimeInMinutes && <Typography variant="caption">{`${lastNotificationTimeInMinutes}m`}</Typography>}
       </Typography>
     </div>
   );
