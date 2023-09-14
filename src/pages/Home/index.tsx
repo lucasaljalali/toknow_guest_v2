@@ -6,6 +6,7 @@ import { InQueueItem } from "../../services/api/dtos/Queue";
 import QueueFilter from "../../components/Filter/QueueFilter";
 import QueueLongCard from "../../components/QueueCard/QueueLongCard";
 import TopBar from "../../components/TopBar/TopBar";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
 export default function Home() {
   const { queue, notifyQueue, notifyQueueRequestBody } = useQueue();
@@ -19,20 +20,36 @@ export default function Home() {
 
   useGesture(
     {
-      onDrag: ({ offset: [dy], target }) => {
+      onDrag: ({ movement: [dy], target }) => {
         const draggedCard = document.getElementById(String(clickedCard)) || (target as HTMLElement).parentElement;
+
         if (draggedCard) {
           draggedCard.style.left = `${dy}px`;
+
+          const isToRemove = Math.abs(dy) > window.innerWidth / 5;
+          const trashes = document.querySelectorAll(".queueHiddenTrash");
+          if (isToRemove) {
+            trashes.forEach((trash) => trash.classList.add("bigTrash"));
+          } else {
+            trashes.forEach((trash) => trash.classList.remove("bigTrash"));
+          }
         }
       },
-      onDragEnd: ({ offset: [dy], target }) => {
+      onDragEnd: ({ movement: [dy], target }) => {
         const draggedCard = document.getElementById(String(clickedCard)) || (target as HTMLElement).parentElement;
+
         if (draggedCard) {
-          const isToRemove = dy >= 200 || dy <= -200;
+          const isToRemove = Math.abs(dy) > window.innerWidth / 5;
+
           if (isToRemove) {
-            handleRemoveDeviceOfQueue(clickedCard, 6, 1, 6);
+            const cardId = clickedCard || Number(draggedCard?.getAttribute("id"));
+            handleRemoveDeviceOfQueue(cardId, 6, 1, 6);
           } else {
+            draggedCard.style.transition = ".3s";
             draggedCard.style.left = `${0}px`;
+            setTimeout(() => {
+              draggedCard.style.transition = "unset";
+            }, 300);
           }
         }
       },
@@ -44,7 +61,7 @@ export default function Home() {
 
   function handleClick(event: MouseEvent, clientData: InQueueItem) {
     if (event.detail === 2) {
-      handleRemoveDeviceOfQueue(clientData?.id, 6, clientData?.currentDestinationId, 6);
+      console.log(clientData);
     }
   }
 
@@ -63,6 +80,8 @@ export default function Home() {
         <QueueFilter />
         {queue?.map((clientData) => (
           <div key={clientData.id} className="queueHiddenTrashContainer" onClick={() => (clickedCard = clientData.id)}>
+            <DeleteForeverIcon id="queueHiddenLeftTrash" className="queueHiddenTrash" />
+            <DeleteForeverIcon id="queueHiddenRightTrash" className="queueHiddenTrash" />
             <div id={String(clientData.id)} style={{ position: "relative" }} onClick={(e) => handleClick(e, clientData)}>
               <QueueLongCard key={clientData.id} data={clientData} />
             </div>
