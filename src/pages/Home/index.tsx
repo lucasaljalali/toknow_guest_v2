@@ -28,7 +28,7 @@ export default function Home() {
       onDragEnd: ({ offset: [dy], target }) => {
         const draggedCard = document.getElementById(String(clickedCard)) || (target as HTMLElement).parentElement;
         if (draggedCard) {
-          const isToRemove = Math.abs(dy) > 200;
+          const isToRemove = dy >= 200 || dy <= -200;
           if (isToRemove) {
             handleRemoveDeviceOfQueue(clickedCard, 6, 1, 6);
           } else {
