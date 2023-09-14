@@ -136,6 +136,12 @@ a {
   gap: .5rem;
   overflow-y: auto;
   overflow-x: hidden;
+  -ms-overflow-style: none;  
+  scrollbar-width: none;
+}
+
+.queueContainer::-webkit-scrollbar {
+  display: none;
 }
 
 .queueFilterContainer {
@@ -166,23 +172,12 @@ a {
 }
 
 .queueHiddenTrashContainer .MuiSvgIcon-root:is(.queueHiddenTrash) {
+  display: none;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   font-size: 2rem;
   transition: .3s;
-}
-
-.queueHiddenTrashContainer .MuiSvgIcon-root:is(.queueHiddenTrash):is(.bigTrash) {
-  font-size: 3rem;
-}
-
-#queueHiddenLeftTrash {
-  left: 3.5rem;
-}
-
-#queueHiddenRightTrash {
-  right: 3.5rem;
 }
 
 .queueLongCardContainer {

@@ -22,28 +22,61 @@ export default function Home() {
     {
       onDrag: ({ movement: [dy], target }) => {
         const draggedCard = document.getElementById(String(clickedCard)) || (target as HTMLElement).parentElement;
+        const dragLeftThreshold = dy < -50;
+        const dragRightThreshold = dy > 50;
+        const isToRemoveLeft = dy < window.innerWidth / -5;
+        const isToRemoveRight = dy > window.innerWidth / 5;
+        const trash = (draggedCard?.querySelector(".queueHiddenTrash") ||
+          draggedCard?.parentElement?.querySelector(".queueHiddenTrash")) as HTMLElement;
 
-        if (draggedCard) {
-          draggedCard.style.left = `${dy}px`;
+        if (draggedCard && (dragLeftThreshold || dragRightThreshold)) {
+          draggedCard.style.left = `${dragLeftThreshold ? dy + 50 + 1 : dy - 50 + 1}px`;
+          trash.style.display = "block";
 
-          const isToRemove = Math.abs(dy) > window.innerWidth / 5;
-          const trashes = document.querySelectorAll(".queueHiddenTrash");
-          if (isToRemove) {
-            trashes.forEach((trash) => trash.classList.add("bigTrash"));
+          if (dragLeftThreshold) {
+            trash.style.right = "3rem";
+            trash.style.left = "unset";
+          }
+
+          if (dragRightThreshold) {
+            trash.style.right = "unset";
+            trash.style.left = "3rem";
+          }
+
+          if (isToRemoveLeft || isToRemoveRight) {
+            trash.style.fontSize = "3rem";
           } else {
-            trashes.forEach((trash) => trash.classList.remove("bigTrash"));
+            trash.style.fontSize = "2rem";
           }
         }
       },
       onDragEnd: ({ movement: [dy], target }) => {
         const draggedCard = document.getElementById(String(clickedCard)) || (target as HTMLElement).parentElement;
+        const dragLeftThreshold = dy < -50;
+        const dragRightThreshold = dy > 50;
+        const isToRemoveLeft = dy < window.innerWidth / -5;
+        const isToRemoveRight = dy > window.innerWidth / 5;
 
-        if (draggedCard) {
-          const isToRemove = Math.abs(dy) > window.innerWidth / 5;
-
-          if (isToRemove) {
+        if (draggedCard && (dragLeftThreshold || dragRightThreshold)) {
+          if (isToRemoveLeft || isToRemoveRight) {
             const cardId = clickedCard || Number(draggedCard?.getAttribute("id"));
             handleRemoveDeviceOfQueue(cardId, 6, 1, 6);
+
+            if (isToRemoveLeft) {
+              draggedCard.style.transition = ".3s";
+              draggedCard.style.left = `-${window.innerWidth}px`;
+              setTimeout(() => {
+                draggedCard.style.transition = "unset";
+              }, 300);
+            }
+
+            if (isToRemoveRight) {
+              draggedCard.style.transition = ".3s";
+              draggedCard.style.left = `${window.innerWidth}px`;
+              setTimeout(() => {
+                draggedCard.style.transition = "unset";
+              }, 300);
+            }
           } else {
             draggedCard.style.transition = ".3s";
             draggedCard.style.left = `${0}px`;
@@ -80,8 +113,7 @@ export default function Home() {
         <QueueFilter />
         {queue?.map((clientData) => (
           <div key={clientData.id} className="queueHiddenTrashContainer" onClick={() => (clickedCard = clientData.id)}>
-            <DeleteForeverIcon id="queueHiddenLeftTrash" className="queueHiddenTrash" />
-            <DeleteForeverIcon id="queueHiddenRightTrash" className="queueHiddenTrash" />
+            <DeleteForeverIcon className="queueHiddenTrash" />
             <div id={String(clientData.id)} style={{ position: "relative" }} onClick={(e) => handleClick(e, clientData)}>
               <QueueLongCard key={clientData.id} data={clientData} />
             </div>

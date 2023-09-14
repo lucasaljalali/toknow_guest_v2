@@ -2,8 +2,8 @@ import { MouseEvent } from "react";
 import { InQueueItem } from "../../services/api/dtos/Queue";
 import { Typography } from "@mui/material";
 import { useQueue } from "../../contexts/QueueContext";
-import PagerCard from "../PagerCard/PagerCard";
 import { useCompany } from "../../contexts/CompanyContext";
+import PagerCard from "../PagerCard/PagerCard";
 
 interface IQueueLongCard {
   data: InQueueItem;
