@@ -1,4 +1,5 @@
-import { MouseEvent, useEffect } from "react";
+import { MouseEvent, useEffect, useRef } from "react";
+import { useGesture } from "@use-gesture/react";
 import { useQueue } from "../../contexts/QueueContext";
 import { useCompany } from "../../contexts/CompanyContext";
 import { InQueueItem } from "../../services/api/dtos/Queue";
@@ -9,10 +10,37 @@ import TopBar from "../../components/TopBar/TopBar";
 export default function Home() {
   const { queue, notifyQueue, notifyQueueRequestBody } = useQueue();
   const { refetchConfigs } = useCompany();
+  const queueContainerRef = useRef(null);
+  let clickedCard: number;
 
   useEffect(() => {
     refetchConfigs();
   }, [queue]);
+
+  useGesture(
+    {
+      onDrag: ({ offset: [dy], target }) => {
+        const draggedCard = document.getElementById(String(clickedCard)) || (target as HTMLElement).parentElement;
+        if (draggedCard) {
+          draggedCard.style.left = `${dy}px`;
+        }
+      },
+      onDragEnd: ({ offset: [dy], target }) => {
+        const draggedCard = document.getElementById(String(clickedCard)) || (target as HTMLElement).parentElement;
+        if (draggedCard) {
+          const isToRemove = Math.abs(dy) > 200;
+          if (isToRemove) {
+            handleRemoveDeviceOfQueue(clickedCard, 6, 1, 6);
+          } else {
+            draggedCard.style.left = `${0}px`;
+          }
+        }
+      },
+    },
+    {
+      target: queueContainerRef,
+    }
+  );
 
   function handleClick(event: MouseEvent, clientData: InQueueItem) {
     if (event.detail === 2) {
@@ -31,11 +59,13 @@ export default function Home() {
     <div className="pageContainer">
       <TopBar />
 
-      <div className="queueContainer">
+      <div className="queueContainer" ref={queueContainerRef} style={{ touchAction: "none" }}>
         <QueueFilter />
         {queue?.map((clientData) => (
-          <div key={clientData.id} className="queueAllCardsContainer" onClick={(e) => handleClick(e, clientData)}>
-            <QueueLongCard key={clientData.id} data={clientData} />
+          <div key={clientData.id} className="queueHiddenTrashContainer" onClick={() => (clickedCard = clientData.id)}>
+            <div id={String(clientData.id)} style={{ position: "relative" }} onClick={(e) => handleClick(e, clientData)}>
+              <QueueLongCard key={clientData.id} data={clientData} />
+            </div>
           </div>
         ))}
       </div>

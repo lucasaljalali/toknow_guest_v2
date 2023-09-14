@@ -135,6 +135,7 @@ a {
   flex-direction: column;
   gap: .5rem;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .queueFilterContainer {
@@ -156,6 +157,11 @@ a {
 
 .MuiSvgIcon-root:is(.queueFilterOptionIcon) {
   font-size: 1rem;
+}
+
+.queueHiddenTrashContainer {
+  background: red;
+  border-radius: var(--border-radius);
 }
 
 .queueLongCardContainer {
