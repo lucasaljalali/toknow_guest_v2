@@ -134,6 +134,7 @@ a {
   display: flex;
   flex-direction: column;
   gap: .5rem;
+  padding: 0 .1rem 2rem .1rem;
   overflow-y: auto;
   overflow-x: hidden;
   -ms-overflow-style: none;  
@@ -169,6 +170,7 @@ a {
   position: relative;
   background: red;
   border-radius: calc(var(--border-radius) + 2px);
+  transition: .5s;
 }
 
 .queueHiddenTrashContainer .MuiSvgIcon-root:is(.queueHiddenTrash) {
@@ -180,6 +182,12 @@ a {
   transition: .3s;
 }
 
+.allCardsTypesContainer {
+  position: relative;
+  box-shadow: var(--shadow-medium);
+  border-radius: var(--border-radius);
+}
+
 .queueLongCardContainer {
   height: 6rem;
   width: 100%;
@@ -187,7 +195,6 @@ a {
   align-items: center;
   background: var(--background-color-terciary);
   border-radius: var(--border-radius);
-  box-shadow: var(--shadow-medium);
 }
 
 .queueCardItem, .queueFilterContainer p {

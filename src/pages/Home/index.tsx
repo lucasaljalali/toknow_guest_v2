@@ -31,27 +31,31 @@ export default function Home() {
 
         if (draggedCard && (dragLeftThreshold || dragRightThreshold)) {
           draggedCard.style.left = `${dragLeftThreshold ? dy + 50 + 1 : dy - 50 + 1}px`;
-          trash.style.display = "block";
 
-          if (dragLeftThreshold) {
-            trash.style.right = "3rem";
-            trash.style.left = "unset";
-          }
+          if (trash) {
+            trash.style.display = "block";
+            if (dragLeftThreshold) {
+              trash.style.right = "3rem";
+              trash.style.left = "unset";
+            }
 
-          if (dragRightThreshold) {
-            trash.style.right = "unset";
-            trash.style.left = "3rem";
-          }
+            if (dragRightThreshold) {
+              trash.style.right = "unset";
+              trash.style.left = "3rem";
+            }
 
-          if (isToRemoveLeft || isToRemoveRight) {
-            trash.style.fontSize = "3rem";
-          } else {
-            trash.style.fontSize = "2rem";
+            if (isToRemoveLeft || isToRemoveRight) {
+              trash.style.fontSize = "3rem";
+            } else {
+              trash.style.fontSize = "2rem";
+            }
           }
         }
       },
       onDragEnd: ({ movement: [dy], target }) => {
         const draggedCard = document.getElementById(String(clickedCard)) || (target as HTMLElement).parentElement;
+        const redBackground = draggedCard?.parentElement;
+
         const dragLeftThreshold = dy < -50;
         const dragRightThreshold = dy > 50;
         const isToRemoveLeft = dy < window.innerWidth / -5;
@@ -60,6 +64,7 @@ export default function Home() {
         if (draggedCard && (dragLeftThreshold || dragRightThreshold)) {
           if (isToRemoveLeft || isToRemoveRight) {
             const cardId = clickedCard || Number(draggedCard?.getAttribute("id"));
+            if (redBackground) redBackground.style.opacity = "0";
             handleRemoveDeviceOfQueue(cardId, 6, 1, 6);
 
             if (isToRemoveLeft) {
@@ -93,6 +98,7 @@ export default function Home() {
   );
 
   function handleClick(event: MouseEvent, clientData: InQueueItem) {
+    clickedCard = clientData.id;
     if (event.detail === 2) {
       console.log(clientData);
     }
@@ -109,12 +115,12 @@ export default function Home() {
     <div className="pageContainer">
       <TopBar />
 
-      <div className="queueContainer" ref={queueContainerRef} style={{ touchAction: "none" }}>
+      <div className="queueContainer" ref={queueContainerRef}>
         <QueueFilter />
         {queue?.map((clientData) => (
           <div key={clientData.id} className="queueHiddenTrashContainer" onClick={() => (clickedCard = clientData.id)}>
             <DeleteForeverIcon className="queueHiddenTrash" />
-            <div id={String(clientData.id)} style={{ position: "relative" }} onClick={(e) => handleClick(e, clientData)}>
+            <div id={String(clientData.id)} className="allCardsTypesContainer" onClick={(e) => handleClick(e, clientData)}>
               <QueueLongCard key={clientData.id} data={clientData} />
             </div>
           </div>

@@ -4,5 +4,7 @@
     "FILTER_LABEL_PRIORITY": "Priority",
     "FILTER_LABEL_WAITING": "Waiting",
     "FILTER_LABEL_ESTIMATED": "Estimated",
-    "FILTER_LABEL_DEVICE": "Device"
+    "FILTER_LABEL_DEVICE": "Device",
+
+    "GLOBAL_NO_AVAILABLE_OPTIONS": "No available options"
 }
