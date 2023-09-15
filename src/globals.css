@@ -173,6 +173,10 @@ a {
   transition: .5s;
 }
 
+.queueHiddenTrashContainer:last-child {
+  margin-bottom: 2rem;
+}
+
 .queueHiddenTrashContainer .MuiSvgIcon-root:is(.queueHiddenTrash) {
   position: absolute;
   top: 50%;
@@ -185,6 +189,7 @@ a {
   position: relative;
   box-shadow: var(--shadow-medium);
   border-radius: var(--border-radius);
+  touch-action: pan-y;
 }
 
 .queueLongCardContainer {
