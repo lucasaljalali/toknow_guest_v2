@@ -174,7 +174,7 @@ a {
 }
 
 .queueHiddenTrashContainer:last-child {
-  margin-bottom: 2rem;
+  margin-bottom: 4rem;
 }
 
 .queueHiddenTrashContainer .MuiSvgIcon-root:is(.queueHiddenTrash) {
