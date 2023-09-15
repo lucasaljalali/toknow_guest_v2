@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useGesture } from "@use-gesture/react";
 import { useQueue } from "../../contexts/QueueContext";
 import { useCompany } from "../../contexts/CompanyContext";
@@ -9,6 +9,7 @@ import TopBar from "../../components/TopBar/TopBar";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
 export default function Home() {
+  const [isSwiping, setIsSwiping] = useState(false);
   const { queue, notifyQueue, notifyQueueRequestBody } = useQueue();
   const { refetchConfigs } = useCompany();
 
@@ -26,6 +27,7 @@ export default function Home() {
     const bind = useGesture(
       {
         onDrag: ({ movement: [dx], last }) => {
+          setIsSwiping(true);
           const isToRemoveLeft = dx < -window.innerWidth / 4;
           const isToRemoveRight = dx > window.innerWidth / 4;
 
@@ -42,6 +44,7 @@ export default function Home() {
             cardRef.current.style.transform = `translateX(${dx}px)`;
 
             if (last) {
+              setIsSwiping(false);
               if (isToRemoveLeft || isToRemoveRight) {
                 onRemove(clientData.id, 6, clientData.currentDestinationId, 6);
                 if (redBackground) redBackground.style.opacity = "0";
@@ -67,7 +70,13 @@ export default function Home() {
     return (
       <div className="queueHiddenTrashContainer">
         <DeleteForeverIcon className="queueHiddenTrash" />
-        <div ref={cardRef} id={String(clientData.id)} className="allCardsTypesContainer" {...bind()}>
+        <div
+          ref={cardRef}
+          id={String(clientData.id)}
+          className="allCardsTypesContainer"
+          style={{ touchAction: isSwiping ? "none" : undefined }}
+          {...bind()}
+        >
           <QueueLongCard key={clientData.id} data={clientData} />
         </div>
       </div>
