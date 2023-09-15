@@ -67,7 +67,7 @@ export default function Home() {
     return (
       <div className="queueHiddenTrashContainer">
         <DeleteForeverIcon className="queueHiddenTrash" />
-        <div ref={cardRef} id={String(clientData.id)} className="allCardsTypesContainer" style={{ touchAction: "none" }} {...bind()}>
+        <div ref={cardRef} id={String(clientData.id)} className="allCardsTypesContainer" {...bind()}>
           <QueueLongCard key={clientData.id} data={clientData} />
         </div>
       </div>
