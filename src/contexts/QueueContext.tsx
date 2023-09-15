@@ -2,6 +2,7 @@ import { MutableRefObject, createContext, useContext, useRef, useState } from "r
 import { axiosInstance } from "../services/api/baseConfigs";
 import { useQuery } from "react-query";
 import { InQueueItem } from "../services/api/dtos/Queue";
+import isEqual from "lodash/isEqual";
 
 const QueueContext = createContext({} as QueueContextData);
 
@@ -107,7 +108,7 @@ export function QueueProvider({ children }: Props) {
     retryDelay: 5000,
     refetchInterval: 5000,
     onSuccess: (data) => {
-      setQueue(data);
+      setQueue((prev) => (isEqual(prev, data) ? prev : data));
     },
     onError: (error) => {
       console.error(error);

@@ -18,7 +18,7 @@ export default function QueueLongCard({ data }: IQueueLongCard) {
   const priorities = data?.priorities?.map(
     (priority) => companyConfigs?.formFieldsData?.priorities?.find((item) => item.id === priority)?.label
   );
-  const createdDate = data.createdDate && new Date(data.createdDate);
+  const createdDate = data?.createdDate && new Date(data.createdDate);
   const currentDate = new Date();
   const waitingTimeInMs = createdDate && currentDate.getTime() - createdDate.getTime();
   const waitingTimeInMinutes = waitingTimeInMs && Math.floor(waitingTimeInMs / (1000 * 60));
@@ -35,7 +35,7 @@ export default function QueueLongCard({ data }: IQueueLongCard) {
   function handleClick(event: MouseEvent) {
     event.stopPropagation();
     if (event.detail === 2) {
-      const clickedDevice = event.currentTarget.querySelector(".deviceIcon");
+      const clickedDevice = event.currentTarget?.querySelector(".deviceIcon");
       clickedDevice?.classList.add("active");
       setTimeout(() => {
         clickedDevice?.classList.remove("active");

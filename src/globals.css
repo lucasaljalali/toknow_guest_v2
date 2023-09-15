@@ -174,12 +174,11 @@ a {
 }
 
 .queueHiddenTrashContainer .MuiSvgIcon-root:is(.queueHiddenTrash) {
-  display: none;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 2rem;
-  transition: .3s;
+  font-size: 1.5rem;
+  transition: font-size .3s;
 }
 
 .allCardsTypesContainer {

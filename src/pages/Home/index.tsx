@@ -1,4 +1,4 @@
-import { MouseEvent, useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useGesture } from "@use-gesture/react";
 import { useQueue } from "../../contexts/QueueContext";
 import { useCompany } from "../../contexts/CompanyContext";
@@ -11,97 +11,78 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 export default function Home() {
   const { queue, notifyQueue, notifyQueueRequestBody } = useQueue();
   const { refetchConfigs } = useCompany();
-  const queueContainerRef = useRef(null);
-  let clickedCard: number;
 
   useEffect(() => {
     refetchConfigs();
   }, [queue]);
 
-  useGesture(
-    {
-      onDrag: ({ movement: [dy], target }) => {
-        const draggedCard = document.getElementById(String(clickedCard)) || (target as HTMLElement).parentElement;
-        const dragLeftThreshold = dy < -50;
-        const dragRightThreshold = dy > 50;
-        const isToRemoveLeft = dy < window.innerWidth / -5;
-        const isToRemoveRight = dy > window.innerWidth / 5;
-        const trash = (draggedCard?.querySelector(".queueHiddenTrash") ||
-          draggedCard?.parentElement?.querySelector(".queueHiddenTrash")) as HTMLElement;
+  const memoizedSwipeableList = useMemo(() => {
+    return <SwipeableList queue={queue} onRemove={handleRemoveDeviceOfQueue} />;
+  }, [queue]);
 
-        if (draggedCard && (dragLeftThreshold || dragRightThreshold)) {
-          draggedCard.style.left = `${dragLeftThreshold ? dy + 50 + 1 : dy - 50 + 1}px`;
+  function SwipeableCard({ clientData, onRemove }: { clientData: InQueueItem; onRemove: Function }) {
+    const cardRef = useRef<HTMLDivElement | null>(null);
 
-          if (trash) {
-            trash.style.display = "block";
-            if (dragLeftThreshold) {
-              trash.style.right = "3rem";
-              trash.style.left = "unset";
+    const bind = useGesture(
+      {
+        onDrag: ({ movement: [dx], last }) => {
+          const isToRemoveLeft = dx < -window.innerWidth / 4;
+          const isToRemoveRight = dx > window.innerWidth / 4;
+
+          if (cardRef.current) {
+            const redBackground = cardRef.current.parentElement;
+            const trash = redBackground && (redBackground?.querySelector(".queueHiddenTrash") as HTMLElement);
+            if (trash) {
+              trash.style.right = dx > 0 ? "unset" : "4rem";
+              trash.style.left = dx < 0 ? "unset" : "4rem";
+              trash.style.transform = `translate(${dx > 0 ? "-50%" : "50%"},-50%)`;
+              trash.style.fontSize = isToRemoveLeft || isToRemoveRight ? "3rem" : "1.5rem";
             }
 
-            if (dragRightThreshold) {
-              trash.style.right = "unset";
-              trash.style.left = "3rem";
-            }
+            cardRef.current.style.transform = `translateX(${dx}px)`;
 
-            if (isToRemoveLeft || isToRemoveRight) {
-              trash.style.fontSize = "3rem";
-            } else {
-              trash.style.fontSize = "2rem";
+            if (last) {
+              if (isToRemoveLeft || isToRemoveRight) {
+                onRemove(clientData.id, 6, clientData.currentDestinationId, 6);
+                if (redBackground) redBackground.style.opacity = "0";
+                cardRef.current.style.left = isToRemoveLeft ? `-${window.innerWidth}px` : `${window.innerWidth}px`;
+              } else {
+                cardRef.current.style.transition = ".3s";
+                cardRef.current.style.transform = `translateX(${0}px)`;
+                setTimeout(() => {
+                  if (cardRef.current) cardRef.current.style.transition = "unset";
+                }, 300);
+              }
             }
           }
-        }
+        },
       },
-      onDragEnd: ({ movement: [dy], target }) => {
-        const draggedCard = document.getElementById(String(clickedCard)) || (target as HTMLElement).parentElement;
-        const redBackground = draggedCard?.parentElement;
+      {
+        drag: {
+          axis: "x",
+        },
+      }
+    );
 
-        const dragLeftThreshold = dy < -50;
-        const dragRightThreshold = dy > 50;
-        const isToRemoveLeft = dy < window.innerWidth / -5;
-        const isToRemoveRight = dy > window.innerWidth / 5;
+    return (
+      <div className="queueHiddenTrashContainer">
+        <DeleteForeverIcon className="queueHiddenTrash" />
+        <div ref={cardRef} id={String(clientData.id)} className="allCardsTypesContainer" style={{ touchAction: "none" }} {...bind()}>
+          <QueueLongCard key={clientData.id} data={clientData} />
+        </div>
+      </div>
+    );
+  }
 
-        if (draggedCard && (dragLeftThreshold || dragRightThreshold)) {
-          if (isToRemoveLeft || isToRemoveRight) {
-            const cardId = clickedCard || Number(draggedCard?.getAttribute("id"));
-            if (redBackground) redBackground.style.opacity = "0";
-            handleRemoveDeviceOfQueue(cardId, 6, 1, 6);
-
-            if (isToRemoveLeft) {
-              draggedCard.style.transition = ".3s";
-              draggedCard.style.left = `-${window.innerWidth}px`;
-              setTimeout(() => {
-                draggedCard.style.transition = "unset";
-              }, 300);
-            }
-
-            if (isToRemoveRight) {
-              draggedCard.style.transition = ".3s";
-              draggedCard.style.left = `${window.innerWidth}px`;
-              setTimeout(() => {
-                draggedCard.style.transition = "unset";
-              }, 300);
-            }
-          } else {
-            draggedCard.style.transition = ".3s";
-            draggedCard.style.left = `${0}px`;
-            setTimeout(() => {
-              draggedCard.style.transition = "unset";
-            }, 300);
-          }
-        }
-      },
-    },
-    {
-      target: queueContainerRef,
-    }
-  );
-
-  function handleClick(event: MouseEvent, clientData: InQueueItem) {
-    clickedCard = clientData.id;
-    if (event.detail === 2) {
-      console.log(clientData);
-    }
+  function SwipeableList({ queue, onRemove }: { queue: InQueueItem[]; onRemove: Function }) {
+    return (
+      <div className="queueContainer">
+        <QueueFilter />
+        {queue?.map((clientData) => (
+          <SwipeableCard key={clientData.id} clientData={clientData} onRemove={onRemove} />
+        ))}
+      </div>
+    );
   }
 
   function handleRemoveDeviceOfQueue(queueId?: string | number, actionId?: number, destinationId?: number, messageId?: number) {
@@ -114,18 +95,7 @@ export default function Home() {
   return (
     <div className="pageContainer">
       <TopBar />
-
-      <div className="queueContainer" ref={queueContainerRef}>
-        <QueueFilter />
-        {queue?.map((clientData) => (
-          <div key={clientData.id} className="queueHiddenTrashContainer" onClick={() => (clickedCard = clientData.id)}>
-            <DeleteForeverIcon className="queueHiddenTrash" />
-            <div id={String(clientData.id)} className="allCardsTypesContainer" onClick={(e) => handleClick(e, clientData)}>
-              <QueueLongCard key={clientData.id} data={clientData} />
-            </div>
-          </div>
-        ))}
-      </div>
+      {memoizedSwipeableList}
     </div>
   );
 }
