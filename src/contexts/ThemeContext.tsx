@@ -35,8 +35,10 @@ const getDesignTokens = (mode: PaletteMode) => ({
         }
       : {
           primary: {
-            main: "#5a14b0",
-            light: "#855abb",
+            main: "#f0ad3b",
+            light: "#f5b74d",
+            dark: "#c0831a",
+            hover: "red",
           },
           secondary: {
             main: "#fdc130",

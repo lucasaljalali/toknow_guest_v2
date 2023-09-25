@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Alert, AlertColor, Snackbar, styled } from "@mui/material";
 import { useGesture } from "@use-gesture/react";
 import { useQueue } from "../../contexts/QueueContext";
 import { useCompany } from "../../contexts/CompanyContext";
@@ -7,17 +8,36 @@ import QueueFilter from "../../components/Filter/QueueFilter";
 import QueueLongCard from "../../components/QueueCard/QueueLongCard";
 import TopBar from "../../components/TopBar/TopBar";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import RightDrawer from "../../components/RightDrawer/RightDrawer";
 
 export default function Home() {
-  const { queue, notifyQueue, notifyQueueRequestBody } = useQueue();
+  const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
+  const { queue, notifyQueue, notifyQueueRequestBody, queueAlert, setQueueAlert } = useQueue();
   const { refetchConfigs } = useCompany();
+
+  const drawerWidth = document?.getElementById("rightDrawer")?.querySelector(".MuiPaper-root")?.clientWidth;
+
+  const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
+    open?: boolean;
+  }>(({ theme, open }) => ({
+    flexGrow: 1,
+    padding: theme.spacing(3),
+    transition: theme.transitions.create("margin", {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    marginRight: 0,
+    ...(open && {
+      transition: theme.transitions.create("margin", {
+        easing: theme.transitions.easing.easeOut,
+        duration: theme.transitions.duration.enteringScreen,
+      }),
+      marginRight: drawerWidth && `${drawerWidth}px`,
+    }),
+  }));
 
   useEffect(() => {
     refetchConfigs();
-  }, [queue]);
-
-  const memoizedSwipeableList = useMemo(() => {
-    return <SwipeableList queue={queue} onRemove={handleRemoveDeviceOfQueue} />;
   }, [queue]);
 
   function SwipeableCard({ clientData, onRemove }: { clientData: InQueueItem; onRemove: Function }) {
@@ -94,8 +114,19 @@ export default function Home() {
 
   return (
     <div className="pageContainer">
-      <TopBar />
-      {memoizedSwipeableList}
+      <Main open={sideDrawerOpen}>
+        <TopBar setSideDrawerOpen={setSideDrawerOpen} />
+
+        <SwipeableList queue={queue} onRemove={handleRemoveDeviceOfQueue} />
+
+        <Snackbar open={queueAlert !== null} autoHideDuration={6000} onClose={() => setQueueAlert(null)}>
+          <Alert variant="filled" severity={queueAlert ? (Object.keys(queueAlert)[0] as AlertColor) : undefined}>
+            {queueAlert?.[Object.keys(queueAlert)[0]]}
+          </Alert>
+        </Snackbar>
+      </Main>
+
+      <RightDrawer open={sideDrawerOpen} setOpen={setSideDrawerOpen} />
     </div>
   );
 }

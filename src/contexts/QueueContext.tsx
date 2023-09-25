@@ -1,4 +1,4 @@
-import { MutableRefObject, createContext, useContext, useRef, useState } from "react";
+import { Dispatch, MutableRefObject, SetStateAction, createContext, useContext, useMemo, useRef, useState } from "react";
 import { axiosInstance } from "../services/api/baseConfigs";
 import { useQuery } from "react-query";
 import { InQueueItem } from "../services/api/dtos/Queue";
@@ -18,7 +18,8 @@ interface IAddQueueRequestBody {
   destinationId: number;
   deviceId: number | string;
   carPlateNumber: string;
-  observations: string;
+  carBackPlateNumber?: string;
+  observations?: string;
   useSMS: boolean;
 }
 
@@ -34,10 +35,12 @@ interface QueueContextData {
   addQueueRequestBody: MutableRefObject<IAddQueueRequestBody>;
   notifyQueue: () => Promise<any>;
   notifyQueueRequestBody: MutableRefObject<INotifyQueueRequestBody>;
+  queueAlert: { [key: string]: string } | null;
+  setQueueAlert: Dispatch<SetStateAction<{ [key: string]: string } | null>>;
 }
-
 export function QueueProvider({ children }: Props) {
   const [queue, setQueue] = useState<InQueueItem[]>([]);
+  const [queueAlert, setQueueAlert] = useState<{ [key: string]: string } | null>(null);
 
   const addQueueRequestBody = useRef<IAddQueueRequestBody>({
     clientsId: [1],
@@ -45,7 +48,8 @@ export function QueueProvider({ children }: Props) {
     destinationId: 1,
     deviceId: 4,
     carPlateNumber: "1", //workaround to use premium api as partySize
-    observations: "", //workaround to use premium api as estimatedTime
+    carBackPlateNumber: "", //workaround to use premium api as estimatedTime
+    observations: "",
     useSMS: false,
   });
 
@@ -69,8 +73,14 @@ export function QueueProvider({ children }: Props) {
 
   const notifyQueue = async () => {
     const response = await axiosInstance.put(`queues/${notifyQueueRequestBody?.current?.id}/notify`, notifyQueueRequestBody?.current);
-    refetchGetQueue();
-    return response.data.data;
+
+    if (response?.data?.code === 1000) {
+      setQueueAlert({ success: response?.data?.message });
+      refetchGetQueue();
+      return response.data;
+    }
+
+    setQueueAlert({ error: response?.data?.message });
   };
 
   // const dataToApi: OutQueueItem = {
@@ -93,35 +103,32 @@ export function QueueProvider({ children }: Props) {
   //   observations: data.observations,
   // };
 
-  const {} = useQuery(["notifyQueue"], notifyQueue, {
-    enabled: false,
-    onSuccess: (data) => {
-      setQueue(data);
-    },
-    onError: (error) => {
-      console.error(error);
-    },
-  });
-
   const { refetch: refetchGetQueue } = useQuery(["getQueue"], getQueue, {
     retry: true,
     retryDelay: 5000,
     refetchInterval: 5000,
     onSuccess: (data) => {
-      setQueue((prev) => (isEqual(prev, data) ? prev : data));
+      if (!isEqual(queue, data)) {
+        setQueue(data);
+      }
     },
     onError: (error) => {
       console.error(error);
     },
   });
 
-  const value: QueueContextData = {
-    queue,
-    addQueue,
-    addQueueRequestBody,
-    notifyQueue,
-    notifyQueueRequestBody,
-  };
+  const value: QueueContextData = useMemo(
+    () => ({
+      queue,
+      addQueue,
+      addQueueRequestBody,
+      notifyQueue,
+      notifyQueueRequestBody,
+      queueAlert,
+      setQueueAlert,
+    }),
+    [queue, queueAlert]
+  );
 
   return <QueueContext.Provider value={value}>{children}</QueueContext.Provider>;
 }

@@ -14,7 +14,7 @@ export default function QueueLongCard({ data }: IQueueLongCard) {
   const { companyConfigs } = useCompany();
   const partySize = data?.carPlate; //workaround to use premium api
   const name = data?.driverName; //workaround to use premium api
-  const estimateDate = data?.observations; //workaround to use premium api
+  const estimateTime = data?.carBackPlate; //workaround to use premium api
   const priorities = data?.priorities?.map(
     (priority) => companyConfigs?.formFieldsData?.priorities?.find((item) => item.id === priority)?.label
   );
@@ -22,14 +22,12 @@ export default function QueueLongCard({ data }: IQueueLongCard) {
   const currentDate = new Date();
   const waitingTimeInMs = createdDate && currentDate.getTime() - createdDate.getTime();
   const waitingTimeInMinutes = waitingTimeInMs && Math.floor(waitingTimeInMs / (1000 * 60));
-  const estimateTimeInMs = estimateDate && createdDate && new Date(estimateDate).getTime() - createdDate.getTime();
-  const estimateTimeInMinutes = estimateTimeInMs ? Math.floor(estimateTimeInMs / (1000 * 60)) : undefined;
   const lastNotification = data?.history?.find((action) => action.actionId === 2);
   const lastNotificationTime = lastNotification?.createdDate;
   const lastNotificationTimeInMs = lastNotificationTime && currentDate.getTime() - new Date(lastNotificationTime).getTime();
   const lastNotificationTimeInMinutes = lastNotificationTimeInMs ? Math.floor(lastNotificationTimeInMs / (1000 * 60)) : undefined;
   const useSMS = data?.useSMS;
-  const deviceLabel = data?.deviceId;
+  const deviceLabel = data?.deviceId ? data?.deviceId : `${data?.driverPhonePrefix} ${data?.driverPhone}`;
   const notifed = lastNotification != undefined;
 
   function handleClick(event: MouseEvent) {
@@ -72,7 +70,7 @@ export default function QueueLongCard({ data }: IQueueLongCard) {
         <Typography variant="h5">{waitingTimeInMinutes ? `${waitingTimeInMinutes}m` : undefined}</Typography>
       </div>
       <div className="queueCardItem">
-        <Typography variant="h5">{estimateTimeInMinutes ? `${estimateTimeInMinutes}m` : undefined}</Typography>
+        <Typography variant="h5">{estimateTime ? `${estimateTime}m` : undefined}</Typography>
       </div>
       <div className="queueCardItem" onClick={handleClick}>
         <PagerCard

@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { Dispatch, SetStateAction, useRef, useState } from "react";
 import { IconButton, Typography } from "@mui/material";
 import { useQueue } from "../../contexts/QueueContext";
 import { useCompany } from "../../contexts/CompanyContext";
 import { useTranslation } from "react-i18next";
 import { ClickAwayListener } from "@mui/base/ClickAwayListener";
+import { useGesture } from "@use-gesture/react";
 import keycloak from "../../services/keycloak/keycloak";
 import AddIcon from "@mui/icons-material/Add";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -12,14 +13,47 @@ import QrCodeIcon from "@mui/icons-material/QrCode";
 import hanamiLogo from "../../assets/images/hanami.png";
 import PagerCard from "../PagerCard/PagerCard";
 
-export default function TopBar() {
+interface ITopBar {
+  setSideDrawerOpen: Dispatch<SetStateAction<boolean>>;
+}
+
+export default function TopBar({ setSideDrawerOpen }: ITopBar) {
   const [devicesOpen, setDevicesOpen] = useState(false);
   const { companyConfigs } = useCompany();
   const { queue, addQueue, addQueueRequestBody } = useQueue();
   const { t } = useTranslation();
 
+  const pressTimerRef = useRef<number | null>(null);
+  const longPressDuration = 2000;
+
   const availableDevices = companyConfigs?.formFieldsData?.devices?.filter((device) => device.isAvailable);
   const noAvailableDevices = availableDevices?.length === 0;
+
+  const bind = useGesture({
+    onPointerDown: () => {
+      pressTimerRef.current = setTimeout(() => {
+        // Long press
+        setSideDrawerOpen((prev) => !prev);
+      }, longPressDuration);
+    },
+    onPointerUp: () => {
+      if (pressTimerRef.current !== null) {
+        if (pressTimerRef.current < longPressDuration) {
+          // Fast click
+          setDevicesOpen((prev) => !prev);
+          setSideDrawerOpen((prev) => (prev ? false : prev));
+        }
+        clearTimeout(pressTimerRef.current);
+        pressTimerRef.current = null;
+      }
+    },
+    onPointerLeave: () => {
+      if (pressTimerRef.current !== null) {
+        clearTimeout(pressTimerRef.current);
+        pressTimerRef.current = null;
+      }
+    },
+  });
 
   function logout() {
     keycloak.logout();
@@ -36,7 +70,7 @@ export default function TopBar() {
     <div className="topBarContainer">
       <div className="buttonsContainer">
         <ClickAwayListener onClickAway={() => setDevicesOpen(false)}>
-          <IconButton className="roundedPrimaryIconButton" onClick={() => setDevicesOpen((prev) => !prev)}>
+          <IconButton className="roundedPrimaryIconButton" {...bind()}>
             <AddIcon />
             <div className={devicesOpen ? "topBarDevicesOptionsContainer active" : "topBarDevicesOptionsContainer"}>
               {noAvailableDevices && <Typography color={"text.primary"}>{t("GLOBAL_NO_AVAILABLE_OPTIONS")}</Typography>}
