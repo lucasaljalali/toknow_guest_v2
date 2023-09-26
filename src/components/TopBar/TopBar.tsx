@@ -11,7 +11,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import QrCodeIcon from "@mui/icons-material/QrCode";
 import hanamiLogo from "../../assets/images/hanami.png";
-import PagerCard from "../PagerCard/PagerCard";
+import DeviceIcon from "../DeviceIcon/DeviceIcon";
 
 interface ITopBar {
   setSideDrawerOpen: Dispatch<SetStateAction<boolean>>;
@@ -84,7 +84,7 @@ export default function TopBar({ setSideDrawerOpen }: ITopBar) {
                       onClick={() => handleAddDeviceInQueue(device?.id)}
                       className="topBarAddDeviceButton"
                     >
-                      <PagerCard deviceLabel={device?.id} />
+                      <DeviceIcon deviceLabel={device?.id} />
                     </div>
                   );
                 }

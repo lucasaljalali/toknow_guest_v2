@@ -16,11 +16,12 @@ interface IAddQueueRequestBody {
   clientsId: number[];
   subClientsId: number[];
   destinationId: number;
-  deviceId: number | string;
+  deviceId?: number | string;
   carPlateNumber: string;
   carBackPlateNumber?: string;
   observations?: string;
   useSMS: boolean;
+  id?: number;
 }
 
 interface INotifyQueueRequestBody {
@@ -32,6 +33,7 @@ interface INotifyQueueRequestBody {
 interface QueueContextData {
   queue: InQueueItem[];
   addQueue: () => Promise<any>;
+  updateQueue: () => Promise<any>;
   addQueueRequestBody: MutableRefObject<IAddQueueRequestBody>;
   notifyQueue: () => Promise<any>;
   notifyQueueRequestBody: MutableRefObject<INotifyQueueRequestBody>;
@@ -46,7 +48,7 @@ export function QueueProvider({ children }: Props) {
     clientsId: [1],
     subClientsId: [1],
     destinationId: 1,
-    deviceId: 4,
+    deviceId: undefined,
     carPlateNumber: "1", //workaround to use premium api as partySize
     carBackPlateNumber: "", //workaround to use premium api as estimatedTime
     observations: "",
@@ -67,6 +69,12 @@ export function QueueProvider({ children }: Props) {
 
   const addQueue = async () => {
     const response = await axiosInstance.post("queues", addQueueRequestBody?.current);
+    refetchGetQueue();
+    return response.data.data;
+  };
+
+  const updateQueue = async () => {
+    const response = await axiosInstance.put(`queues/${addQueueRequestBody?.current?.id}`, addQueueRequestBody?.current);
     refetchGetQueue();
     return response.data.data;
   };
@@ -121,6 +129,7 @@ export function QueueProvider({ children }: Props) {
     () => ({
       queue,
       addQueue,
+      updateQueue,
       addQueueRequestBody,
       notifyQueue,
       notifyQueueRequestBody,

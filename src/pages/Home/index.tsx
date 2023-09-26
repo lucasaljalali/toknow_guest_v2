@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { MouseEvent, useEffect, useRef, useState } from "react";
 import { Alert, AlertColor, Snackbar, styled } from "@mui/material";
 import { useGesture } from "@use-gesture/react";
 import { useQueue } from "../../contexts/QueueContext";
 import { useCompany } from "../../contexts/CompanyContext";
 import { InQueueItem } from "../../services/api/dtos/Queue";
+import { ITransformedInQueueData, transformInQueueData } from "./utils/transformInQueueData";
 import QueueFilter from "../../components/Filter/QueueFilter";
-import QueueLongCard from "../../components/QueueCard/QueueLongCard";
+import QueueCard from "../../components/QueueCard/QueueCard";
 import TopBar from "../../components/TopBar/TopBar";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import RightDrawer from "../../components/RightDrawer/RightDrawer";
@@ -13,7 +14,9 @@ import RightDrawer from "../../components/RightDrawer/RightDrawer";
 export default function Home() {
   const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
   const { queue, notifyQueue, notifyQueueRequestBody, queueAlert, setQueueAlert } = useQueue();
-  const { refetchConfigs } = useCompany();
+  const { refetchConfigs, companyConfigs } = useCompany();
+
+  const cardData = useRef<ITransformedInQueueData | null>(null);
 
   const drawerWidth = document?.getElementById("rightDrawer")?.querySelector(".MuiPaper-root")?.clientWidth;
 
@@ -42,6 +45,8 @@ export default function Home() {
 
   function SwipeableCard({ clientData, onRemove }: { clientData: InQueueItem; onRemove: Function }) {
     const cardRef = useRef<HTMLDivElement | null>(null);
+
+    const transformedData = transformInQueueData(clientData, companyConfigs);
 
     const bind = useGesture(
       {
@@ -88,7 +93,7 @@ export default function Home() {
       <div className="queueHiddenTrashContainer">
         <DeleteForeverIcon className="queueHiddenTrash" />
         <div ref={cardRef} id={String(clientData.id)} className="allCardsTypesContainer" style={{ touchAction: "pan-y" }} {...bind()}>
-          <QueueLongCard key={clientData.id} data={clientData} />
+          <QueueCard key={clientData.id} data={transformedData} onCardClick={handleCardClick} onDeviceClick={handleDeviceClick} />
         </div>
       </div>
     );
@@ -112,6 +117,34 @@ export default function Home() {
     }
   }
 
+  function handleCardClick(event: MouseEvent, data: ITransformedInQueueData) {
+    event.stopPropagation();
+
+    if (event.detail === 2) {
+      cardData.current = data;
+      setSideDrawerOpen((prev) => !prev);
+    }
+  }
+
+  function handleDeviceClick(event: MouseEvent, data: InQueueItem) {
+    event.stopPropagation();
+    if (event.detail === 2) {
+      const clickedDevice = event.currentTarget?.querySelector(".deviceIcon");
+      clickedDevice?.classList.add("active");
+      setTimeout(() => {
+        clickedDevice?.classList.remove("active");
+      }, 2000);
+      handleNotifyDevice(data?.id, 2, data?.currentDestinationId, 2);
+    }
+  }
+
+  function handleNotifyDevice(queueId?: string | number, actionId?: number, destinationId?: number, messageId?: number) {
+    if (queueId) {
+      notifyQueueRequestBody.current = { id: queueId, actionId: actionId, destinationId: destinationId, messageId: messageId };
+      notifyQueue();
+    }
+  }
+
   return (
     <div className="pageContainer">
       <Main open={sideDrawerOpen}>
@@ -126,7 +159,7 @@ export default function Home() {
         </Snackbar>
       </Main>
 
-      <RightDrawer open={sideDrawerOpen} setOpen={setSideDrawerOpen} />
+      <RightDrawer open={sideDrawerOpen} setOpen={setSideDrawerOpen} cardData={cardData} />
     </div>
   );
 }

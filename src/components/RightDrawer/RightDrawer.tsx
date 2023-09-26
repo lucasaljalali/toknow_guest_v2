@@ -9,65 +9,74 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, MutableRefObject, SetStateAction, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { phonePrefixs } from "../../configuration/phonePrefixs";
 import { useCompany } from "../../contexts/CompanyContext";
 import { useQueue } from "../../contexts/QueueContext";
-import { InInputConfigs } from "../../services/api/dtos/CompanyConfigs";
+import { ITransformedInQueueData } from "../../pages/Home/utils/transformInQueueData";
 
 interface IRightDrawer {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
+  cardData: MutableRefObject<ITransformedInQueueData | null>;
 }
 
-interface IData {
-  useSMS?: boolean;
-  name?: string;
-  partySize?: string;
-  phonePrefix?: { id: string; label: string };
-  phoneNumber?: string;
-  verifyCode?: string;
-  device?: InInputConfigs;
-  priorities?: { id: string; label: string }[];
-  observations?: string;
-  estimatedTime?: string;
-}
-
-export default function RightDrawer({ open, setOpen }: IRightDrawer) {
-  const [data, setData] = useState<IData | null>(null);
+export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
+  const [data, setData] = useState<ITransformedInQueueData | null>(null);
   const [hasCode, setHasCode] = useState(false);
   const { companyConfigs } = useCompany();
-  const { addQueue, addQueueRequestBody } = useQueue();
+  const { addQueue, updateQueue, addQueueRequestBody } = useQueue();
   const { t } = useTranslation();
 
-  const firstAvailableDevice = companyConfigs?.formFieldsData?.devices?.find((device) => device.isAvailable === true);
+  const isEditQueue = cardData?.current?.id != undefined && `${cardData?.current.id}`.length > 0;
+
+  const availableDevices = companyConfigs?.formFieldsData?.devices?.filter((device) => device.isAvailable === true);
 
   const handleChange = (key: string, value: any) => {
-    setData((prevData) => ({ ...prevData, [key]: value }));
+    setData((prevData) => (prevData ? { ...prevData, [key]: value } : ({ [key]: value } as ITransformedInQueueData)));
   };
+
+  useEffect(() => {
+    if (cardData?.current) {
+      setData(cardData?.current);
+    }
+  }, [cardData.current]);
+
+  useEffect(() => {
+    if (!open) {
+      setData(null);
+      cardData.current = null;
+      document.querySelectorAll(".queueCard")?.forEach((card) => card.classList.remove("active"));
+    }
+
+    if (open && cardData.current?.id) {
+      const clickedCard = document.getElementById(`${cardData.current.id}`)?.querySelector(".queueCard");
+      clickedCard?.classList.add("active");
+    }
+  }, [open]);
 
   function handleSubmit() {
     const dataToSubmit = {
       ...addQueueRequestBody.current,
-      deviceId: data?.device?.id || firstAvailableDevice?.id || 0,
+      deviceId: !data?.useSMS ? data?.deviceId || availableDevices?.[0]?.id : undefined,
       useSMS: data?.useSMS || false,
-      prioritiesId: data?.priorities?.map((priority) => priority.id),
+      prioritiesId: data?.priorities && data.priorities.length > 0 ? data.priorities : undefined,
       driverName: data?.name,
-      driverPhonePrefix: data?.phonePrefix?.id,
+      driverPhonePrefix: data?.phonePrefix || "+351",
       driverPhone: data?.phoneNumber,
       carPlateNumber: data?.partySize || "1",
       carBackPlateNumber: data?.estimatedTime || "",
       observations: data?.observations,
+      id: data?.id,
     };
-    console.log(dataToSubmit);
+
     addQueueRequestBody.current = dataToSubmit;
-    addQueue();
+    isEditQueue ? updateQueue() : addQueue();
     setOpen(false);
     setHasCode(false);
     setData(null);
   }
-
   return (
     <ClickAwayListener onClickAway={() => setOpen(false)}>
       <SwipeableDrawer
@@ -79,16 +88,21 @@ export default function RightDrawer({ open, setOpen }: IRightDrawer) {
         onOpen={() => setOpen(true)}
       >
         <Typography variant="h6" className="drawerTitle">
-          {t("FORM_LABEL_ADD_TO_QUEUE")}
+          {isEditQueue
+            ? `${t("FORM_LABEL_ARRIVED_AT")} ${data?.createdDate?.split("T")?.[1]?.slice(0, -3)}`
+            : t("FORM_LABEL_ADD_TO_QUEUE")}
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit}>
           <FormControlLabel
+            name="useSMS"
             label={t("FORM_LABEL_USE_SMS")}
             labelPlacement="start"
             control={<Switch color="primary" />}
             value={data?.useSMS || false}
+            checked={data?.useSMS || false}
             onChange={(_event, checked) => handleChange("useSMS", checked)}
+            disabled={isEditQueue}
           />
 
           <TextField
@@ -113,19 +127,18 @@ export default function RightDrawer({ open, setOpen }: IRightDrawer) {
             <Autocomplete
               disableClearable
               fullWidth
-              options={phonePrefixs}
-              value={data?.phonePrefix || { id: "+351", label: t("+351 FORM_LABEL_PORTUGAL") }}
+              options={phonePrefixs?.map((prefix) => prefix.id)}
+              value={data?.phonePrefix || "+351"}
               onChange={(_event, value) => handleChange("phonePrefix", value)}
-              isOptionEqualToValue={(option, value) => option.id === value.id}
-              getOptionLabel={(option) => option.id}
               renderInput={(params) => <TextField {...params} name="phonePrefix" label={t("FORM_LABEL_PREFIX")} />}
               renderOption={(props, option) => {
                 return (
-                  <li {...props} key={option.id}>
-                    {t(option.label)}
+                  <li {...props} key={option}>
+                    {t(phonePrefixs?.find((prefix) => prefix.id === option)?.label || "")}
                   </li>
                 );
               }}
+              disabled={isEditQueue && data?.useSMS}
             />
 
             <TextField
@@ -135,42 +148,47 @@ export default function RightDrawer({ open, setOpen }: IRightDrawer) {
               label={t("FORM_LABEL_PHONE_NUMBER")}
               value={data?.phoneNumber || ""}
               onChange={(e) => handleChange("phoneNumber", e.target.value?.replace(/\D/g, ""))}
+              disabled={isEditQueue && data?.useSMS}
             />
           </div>
 
           {data?.useSMS ? (
-            <div className="formPhoneContainer">
-              <Button id="verifyCodeButton" variant="outlined">
-                {hasCode ? t("FORM_LABEL_VERIFY") : t("FORM_LABEL_GET_CODE")}
-              </Button>
-              <TextField
-                required
-                fullWidth
-                variant="outlined"
-                name="verifyCode"
-                label={t("FORM_LABEL_VERIFY_CODE")}
-                value={data?.verifyCode || ""}
-                onChange={(e) => handleChange("verifyCode", e.target.value?.replace(/\D/g, ""))}
-              />
-            </div>
+            !isEditQueue && (
+              <div className="formPhoneContainer">
+                <Button id="verifyCodeButton" variant="outlined">
+                  {hasCode ? t("FORM_LABEL_VERIFY") : t("FORM_LABEL_GET_CODE")}
+                </Button>
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  name="verifyCode"
+                  label={t("FORM_LABEL_VERIFY_CODE")}
+                  value={data?.verifyCode || ""}
+                  onChange={(e) => handleChange("verifyCode", e.target.value?.replace(/\D/g, ""))}
+                />
+              </div>
+            )
           ) : (
             <Autocomplete
               disableClearable
               fullWidth
-              options={companyConfigs?.formFieldsData?.devices || []}
-              value={data?.device || firstAvailableDevice}
-              onChange={(_event, value) => handleChange("device", value)}
+              options={
+                (isEditQueue
+                  ? companyConfigs?.formFieldsData?.devices?.map((device) => device.id)
+                  : availableDevices?.map((device) => device.id)) || []
+              }
+              value={data?.deviceId || availableDevices?.[0]?.id}
+              onChange={(_event, value) => handleChange("deviceId", value)}
               renderInput={(params) => <TextField {...params} name="device" label={t("FORM_LABEL_DEVICE")} required />}
+              getOptionLabel={(option) => `${option}`}
               renderOption={(props, option) => {
-                const availableOptions = option.isAvailable;
-                if (availableOptions) {
-                  return (
-                    <li {...props} key={option.id}>
-                      {option.label}
-                    </li>
-                  );
-                }
+                return (
+                  <li {...props} key={option}>
+                    {companyConfigs?.formFieldsData?.devices?.find((device) => device.id === option)?.label}
+                  </li>
+                );
               }}
+              disabled={isEditQueue}
             />
           )}
 
@@ -178,14 +196,17 @@ export default function RightDrawer({ open, setOpen }: IRightDrawer) {
             disableClearable
             fullWidth
             multiple
-            options={companyConfigs?.formFieldsData?.priorities || []}
+            options={companyConfigs?.formFieldsData?.priorities?.map((priority) => priority.id) || []}
+            value={data?.priorities || []}
             onChange={(_event, value) => handleChange("priorities", value)}
-            isOptionEqualToValue={(option, value) => option.id === value.id}
             renderInput={(params) => <TextField {...params} name="priorities" label={t("FORM_LABEL_PRIORITIES")} />}
+            getOptionLabel={(option) =>
+              t(companyConfigs?.formFieldsData?.priorities?.find((priority) => priority.id === option)?.label || "")
+            }
             renderOption={(props, option) => {
               return (
-                <li {...props} key={option.id}>
-                  {option.label}
+                <li {...props} key={option}>
+                  {t(companyConfigs?.formFieldsData?.priorities?.find((priority) => priority.id === option)?.label || "")}
                 </li>
               );
             }}
@@ -204,20 +225,22 @@ export default function RightDrawer({ open, setOpen }: IRightDrawer) {
           <Autocomplete
             disableClearable
             fullWidth
-            options={["0", "15", "30", "60"]}
+            options={["", "0", "15", "30", "60"]}
+            value={data?.estimatedTime || ""}
             onChange={(_event, value) => handleChange("estimatedTime", value)}
             renderInput={(params) => <TextField {...params} name="estimatedTime" label={t("FORM_LABEL_ESTIMATED_TIME_IN_MIN")} />}
             renderOption={(props, option) => {
-              return (
-                <li {...props} key={option}>
-                  {option}
-                </li>
-              );
+              if (option?.length > 0)
+                return (
+                  <li {...props} key={option}>
+                    {option}
+                  </li>
+                );
             }}
           />
 
           <Button id="formSubmitButton" variant="contained" type="submit">
-            {t("FORM_LABEL_ADD")}
+            {isEditQueue ? t("FORM_LABEL_SAVE") : t("FORM_LABEL_ADD")}
           </Button>
         </Box>
       </SwipeableDrawer>

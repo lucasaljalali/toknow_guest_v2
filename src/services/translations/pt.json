@@ -20,6 +20,8 @@
     "FORM_LABEL_OBSERVATIONS": "Observações",
     "FORM_LABEL_ESTIMATED_TIME_IN_MIN": "Tempo Estimado em Minutos",
     "FORM_LABEL_ADD": "Adicionar",
+    "FORM_LABEL_SAVE": "Salvar",
+    "FORM_LABEL_ARRIVED_AT": "CHEGOU ÀS",
 
     "+351 FORM_LABEL_PORTUGAL": "+351 Portugal",
     "+44 FORM_LABEL_UNITED_KINGDOM": "+44 Reino Unido",

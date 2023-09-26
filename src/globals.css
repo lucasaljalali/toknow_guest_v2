@@ -70,12 +70,11 @@ a {
   text-decoration: none;
 }
 
-.pageContainer {
+/* .pageContainer {
   width: 100vw;
   height: 100vh;
   display: flex;
-  padding: 1rem;
-}
+} */
 
 .topBarContainer {
   position: relative;
@@ -132,7 +131,7 @@ a {
 .queueContainer {
   display: flex;
   flex-direction: column;
-  gap: .5rem;
+  gap: .75rem;
   padding: 0 .1rem 2rem .1rem;
   overflow-y: auto;
   overflow-x: hidden;
@@ -230,7 +229,7 @@ a {
   transition: .2s;
 }
 
-.deviceIcon:is(.active) {
+.deviceIcon:is(.active), .queueCard:is(.active) {
   box-shadow: var(--primary-color-main) 0px 0 2px 2px;
 }
 
@@ -265,7 +264,7 @@ a {
 
 .topBarDevicesOptionsContainer {
   position: absolute;
-  height: 5rem;
+  height: 5.5rem;
   width: fit-content;
   max-width: calc(100vw - 7rem);
   left: 5rem;
@@ -275,6 +274,7 @@ a {
   transition: opacity 0.3s ease-in-out;
   pointer-events: none;
   background: var(--background-color-secondary);
+  box-shadow: var(--shadow-raised);
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -302,8 +302,8 @@ a {
 }
 
 .topBarAddDeviceButton .deviceIcon {
-  width: 4.25rem;
-  height: 4.25rem;
+  width: 4.5rem;
+  height: 4.5rem;
 }
 
 #rightDrawer .MuiPaper-root {
