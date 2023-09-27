@@ -68,6 +68,17 @@ body {
   user-select: none; /* Standard syntax */
 }
 
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type='number'] {
+  appearance: none;
+}
+
 a {
   color: inherit;
   text-decoration: none;

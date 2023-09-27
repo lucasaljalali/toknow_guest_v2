@@ -165,6 +165,7 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
             label={t("FORM_LABEL_NAME")}
             value={data?.name || ""}
             onChange={(e) => handleChange("name", e.target.value?.replace(/[^A-Za-z\s]/g, "")?.slice(0, 50))}
+            type="text"
           />
 
           <TextField
@@ -174,6 +175,7 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
             label={t("FORM_LABEL_PARTY_SIZE")}
             value={data?.partySize || ""}
             onChange={(e) => handleChange("partySize", e.target.value?.replace(/\D/g, "")?.slice(0, 3))}
+            type="number"
           />
 
           <div className="formPhoneContainer">
@@ -202,6 +204,7 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
               value={data?.phoneNumber || ""}
               onChange={(e) => handleChange("phoneNumber", e.target.value?.replace(/\D/g, "")?.slice(0, 11))}
               disabled={(isEditQueue && data?.useSMS) || isCodeVerified === true}
+              type="number"
             />
           </div>
 
@@ -234,8 +237,9 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
                   name="verifyCode"
                   label={t("FORM_LABEL_VERIFY_CODE")}
                   value={data?.verifyCode || ""}
-                  onChange={(e) => handleChange("verifyCode", e.target.value?.replace(/\D/g, ""))}
+                  onChange={(e) => handleChange("verifyCode", e.target.value?.replace(/\D/g, "")?.slice(0, 6))}
                   disabled={!codeId || isCodeVerified === true}
+                  type="number"
                 />
               </div>
             )
@@ -286,11 +290,11 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
           <TextField
             fullWidth
             variant="outlined"
-            type="text"
             name="observations"
             label={t("FORM_LABEL_OBSERVATIONS")}
             value={data?.observations || ""}
             onChange={(e) => handleChange("observations", e.target.value)}
+            type="text"
           />
 
           <Autocomplete
