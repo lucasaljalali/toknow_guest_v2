@@ -144,7 +144,7 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
             : t("FORM_LABEL_ADD_TO_QUEUE")}
         </Typography>
 
-        <Box component="form" onSubmit={handleSubmit}>
+        <Box component="form" autoComplete="off">
           <FormControlLabel
             name="useSMS"
             label={t("FORM_LABEL_USE_SMS")}
@@ -163,7 +163,7 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
             name="name"
             label={t("FORM_LABEL_NAME")}
             value={data?.name || ""}
-            onChange={(e) => handleChange("name", e.target.value)}
+            onChange={(e) => handleChange("name", e.target.value?.replace(/[^A-Za-z\s]/g, "")?.slice(0, 50))}
           />
 
           <TextField
@@ -172,7 +172,7 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
             name="partySize"
             label={t("FORM_LABEL_PARTY_SIZE")}
             value={data?.partySize || ""}
-            onChange={(e) => handleChange("partySize", e.target.value?.replace(/\D/g, ""))}
+            onChange={(e) => handleChange("partySize", e.target.value?.replace(/\D/g, "")?.slice(0, 3))}
           />
 
           <div className="formPhoneContainer">
@@ -199,7 +199,7 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
               name="phoneNumber"
               label={t("FORM_LABEL_PHONE_NUMBER")}
               value={data?.phoneNumber || ""}
-              onChange={(e) => handleChange("phoneNumber", e.target.value?.replace(/\D/g, ""))}
+              onChange={(e) => handleChange("phoneNumber", e.target.value?.replace(/\D/g, "")?.slice(0, 11))}
               disabled={(isEditQueue && data?.useSMS) || isCodeVerified === true}
             />
           </div>
@@ -309,7 +309,12 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
             }}
           />
 
-          <Button id="formSubmitButton" variant="contained" type="submit">
+          <Button
+            id="formSubmitButton"
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={data?.useSMS && (!data?.phoneNumber || data?.phoneNumber?.length === 0)}
+          >
             {isEditQueue ? t("FORM_LABEL_SAVE") : t("FORM_LABEL_ADD")}
           </Button>
         </Box>

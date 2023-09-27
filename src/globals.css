@@ -63,6 +63,9 @@ body {
 body {
   background: var(--background-color-primary);
   color: var(--text-color-primary);
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
 }
 
 a {
@@ -123,6 +126,7 @@ a {
   text-align: center;
   background: #2A442A;
   color: var(--text-color-unique-light);
+  overflow: hidden;
 }
 
 .MuiIconButton-root:is(.roundedPrimaryIconButton) svg, .MuiIconButton-root:is(.roundedSecondaryIconButton) svg, .MuiTypography-root:is(.partySizeTag) {
@@ -196,8 +200,14 @@ a {
   width: 100%;
   display: flex;
   align-items: center;
+  gap: .5rem;
   background: var(--background-color-terciary);
   border-radius: var(--border-radius);
+}
+
+.queueCardItem {
+  max-height: 100%;
+  padding: .25rem;
 }
 
 .queueCardItem, .queueFilterContainer p {
@@ -209,6 +219,10 @@ a {
 .queueCardItem:first-child, .queueCardItem:last-child, .queueFilterContainer p:first-child, .queueFilterContainer p:last-child {
   flex: .75;
   justify-content: center;
+}
+
+.queueCardItem .MuiTypography-root {
+  overflow: hidden;
 }
 
 .arrayToStringLines {
