@@ -89,8 +89,9 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
     };
 
     addQueueRequestBody.current = dataToSubmit;
-    isEditQueue ? updateQueue() : addQueue();
-    setOpen(false);
+    (isEditQueue ? updateQueue() : addQueue()).then(() => {
+      setOpen(false);
+    });
   }
 
   async function handleVerifyCode() {

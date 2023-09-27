@@ -1,4 +1,4 @@
-import { Dispatch, MouseEvent, SetStateAction, useRef, useState } from "react";
+import { Dispatch, MouseEvent, SetStateAction, TouchEvent, useRef, useState } from "react";
 import { IconButton, Typography } from "@mui/material";
 import { useQueue } from "../../contexts/QueueContext";
 import { useCompany } from "../../contexts/CompanyContext";
@@ -59,7 +59,7 @@ export default function TopBar({ setSideDrawerOpen }: ITopBar) {
     keycloak.logout();
   }
 
-  function handleAddDeviceInQueue(event: MouseEvent<HTMLDivElement>, deviceId: number | string) {
+  function handleAddDeviceInQueue(event: MouseEvent<HTMLDivElement> | TouchEvent<HTMLDivElement>, deviceId: number | string) {
     event.stopPropagation();
     const deviceToRemoveFromTopBar = document.getElementById(`${deviceId}`);
     if (deviceToRemoveFromTopBar) deviceToRemoveFromTopBar.style.display = "none";
@@ -83,6 +83,7 @@ export default function TopBar({ setSideDrawerOpen }: ITopBar) {
                       key={device?.id}
                       id={`${device?.id}`}
                       onClick={(e) => handleAddDeviceInQueue(e, device?.id)}
+                      onTouchEnd={(e) => handleAddDeviceInQueue(e, device?.id)}
                       className="topBarAddDeviceButton"
                     >
                       <DeviceIcon deviceLabel={device?.id} />
