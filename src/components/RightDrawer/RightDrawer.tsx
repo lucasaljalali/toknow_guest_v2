@@ -52,6 +52,9 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
   useEffect(() => {
     if (!open) {
       setData(null);
+      setCountdown(0);
+      setCodeId(null);
+      setIsCodeVerified(null);
       cardData.current = null;
       document.querySelectorAll(".queueCard")?.forEach((card) => card.classList.remove("active"));
     }
@@ -88,9 +91,6 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
     addQueueRequestBody.current = dataToSubmit;
     isEditQueue ? updateQueue() : addQueue();
     setOpen(false);
-    setCodeId(null);
-    setData(null);
-    setCountdown(0);
   }
 
   async function handleVerifyCode() {
