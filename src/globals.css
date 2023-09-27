@@ -93,7 +93,8 @@ a {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: 10rem;
+  width: 10vw;
+  max-width: 10rem;
 }
 
 .MuiIconButton-root:is(.roundedPrimaryIconButton) {
@@ -332,14 +333,13 @@ a {
 }
 
 .drawerTitle {
-  background: var(--primary-color-main);
-  color: var(--text-color-unique-dark);
+  background: var(--background-color-secondary);
+  color: var(--text-color);
   width: 100%;
   text-align: center;
   padding: .5rem 2rem;
   border-top-left-radius: inherit;
-  border-bottom-left-radius: inherit;
-  border-bottom-right-radius: var(--border-radius);
+  box-shadow: var(--shadow-light);
 }
 
 #verifyCodeButton {
@@ -351,6 +351,14 @@ a {
   width: 100%;
   display: grid;
   grid-template-columns: 1fr 2fr;
+}
+
+.verified {
+  border-color: green !important;
+}
+
+.unverified {
+  border-color: red !important;
 }
 
 #formSubmitButton {

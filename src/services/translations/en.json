@@ -22,6 +22,7 @@
     "FORM_LABEL_ADD": "Add",
     "FORM_LABEL_SAVE": "Save",
     "FORM_LABEL_ARRIVED_AT": "ARRIVED AT",
+    "FORM_LABEL_VERIFIED": "Verified",
 
     "+351 FORM_LABEL_PORTUGAL": "+351 Portugal",
     "+44 FORM_LABEL_UNITED_KINGDOM": "+44 United Kingdom",
@@ -43,5 +44,7 @@
     "+43 FORM_LABEL_AUSTRIA": "+43 Austria",
     "+48 FORM_LABEL_POLAND": "+48 Poland",
 
-    "GLOBAL_NO_AVAILABLE_OPTIONS": "No available options"
+    "GLOBAL_NO_AVAILABLE_OPTIONS": "No available options",
+    "GLOBAL_SUCCESS_MESSAGE": "Success!",
+    "GLOBAL_ERROR_MESSAGE": "Error!"
 }

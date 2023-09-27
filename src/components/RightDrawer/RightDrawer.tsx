@@ -15,6 +15,7 @@ import { phonePrefixs } from "../../configuration/phonePrefixs";
 import { useCompany } from "../../contexts/CompanyContext";
 import { useQueue } from "../../contexts/QueueContext";
 import { ITransformedInQueueData } from "../../pages/Home/utils/transformInQueueData";
+import { axiosInstance } from "../../services/api/baseConfigs";
 
 interface IRightDrawer {
   open: boolean;
@@ -24,9 +25,11 @@ interface IRightDrawer {
 
 export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
   const [data, setData] = useState<ITransformedInQueueData | null>(null);
-  const [hasCode, setHasCode] = useState(false);
+  const [codeId, setCodeId] = useState<number | null>(null);
+  const [isCodeVerified, setIsCodeVerified] = useState<boolean | null>(null);
+  const [countdown, setCountdown] = useState<number>(0);
   const { companyConfigs } = useCompany();
-  const { addQueue, updateQueue, addQueueRequestBody } = useQueue();
+  const { addQueue, updateQueue, addQueueRequestBody, setQueueAlert } = useQueue();
   const { t } = useTranslation();
 
   const isEditQueue = cardData?.current?.id != undefined && `${cardData?.current.id}`.length > 0;
@@ -40,6 +43,9 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
   useEffect(() => {
     if (cardData?.current) {
       setData(cardData?.current);
+      if (cardData.current.useSMS) {
+        setIsCodeVerified(true);
+      }
     }
   }, [cardData.current]);
 
@@ -55,6 +61,14 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
       clickedCard?.classList.add("active");
     }
   }, [open]);
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+    setCodeId(null);
+  }, [countdown]);
 
   function handleSubmit() {
     const dataToSubmit = {
@@ -74,9 +88,46 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
     addQueueRequestBody.current = dataToSubmit;
     isEditQueue ? updateQueue() : addQueue();
     setOpen(false);
-    setHasCode(false);
+    setCodeId(null);
     setData(null);
+    setCountdown(0);
   }
+
+  async function handleVerifyCode() {
+    const codeBodyRequest = {
+      id: codeId,
+      phoneNumberPrefix: data?.phonePrefix || "+351",
+      phoneNumber: data?.phoneNumber,
+      passCode: data?.verifyCode,
+      // translateTo: data?.locale,
+    };
+
+    if (codeId) {
+      try {
+        const response = await axiosInstance.put(`phoneverification/verify`, codeBodyRequest);
+        if (response?.data?.isValid) {
+          setIsCodeVerified(true);
+          setCountdown(0);
+          return setQueueAlert({ success: t("GLOBAL_SUCCESS_MESSAGE") });
+        }
+        setIsCodeVerified(false);
+        return setQueueAlert({ error: t("GLOBAL_ERROR_MESSAGE") });
+      } catch (error: any) {
+        setIsCodeVerified(false);
+        return setQueueAlert({ error: t("GLOBAL_ERROR_MESSAGE") });
+      }
+    }
+
+    try {
+      const response = await axiosInstance.post(`phoneverification/generate`, codeBodyRequest);
+      setCodeId(response?.data?.id);
+      setCountdown(120);
+      return setQueueAlert({ success: t("GLOBAL_SUCCESS_MESSAGE") });
+    } catch (error: any) {
+      return setQueueAlert({ error: t("GLOBAL_ERROR_MESSAGE") });
+    }
+  }
+
   return (
     <ClickAwayListener onClickAway={() => setOpen(false)}>
       <SwipeableDrawer
@@ -106,6 +157,7 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
           />
 
           <TextField
+            autoComplete="true"
             fullWidth
             variant="outlined"
             name="name"
@@ -138,7 +190,7 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
                   </li>
                 );
               }}
-              disabled={isEditQueue && data?.useSMS}
+              disabled={(isEditQueue && data?.useSMS) || isCodeVerified === true}
             />
 
             <TextField
@@ -148,15 +200,32 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
               label={t("FORM_LABEL_PHONE_NUMBER")}
               value={data?.phoneNumber || ""}
               onChange={(e) => handleChange("phoneNumber", e.target.value?.replace(/\D/g, ""))}
-              disabled={isEditQueue && data?.useSMS}
+              disabled={(isEditQueue && data?.useSMS) || isCodeVerified === true}
             />
           </div>
 
           {data?.useSMS ? (
             !isEditQueue && (
               <div className="formPhoneContainer">
-                <Button id="verifyCodeButton" variant="outlined">
-                  {hasCode ? t("FORM_LABEL_VERIFY") : t("FORM_LABEL_GET_CODE")}
+                <Button
+                  id="verifyCodeButton"
+                  variant="outlined"
+                  onClick={handleVerifyCode}
+                  disabled={
+                    data?.phoneNumber == undefined ||
+                    data?.phonePrefix?.length === 0 ||
+                    data?.phoneNumber?.length === 0 ||
+                    (codeId && !data?.verifyCode) ||
+                    (data?.verifyCode && data?.verifyCode?.length < 6) ||
+                    isCodeVerified === true
+                  }
+                  className={isCodeVerified === true ? "verified" : isCodeVerified === false ? "unverified" : undefined}
+                >
+                  {isCodeVerified
+                    ? t("FORM_LABEL_VERIFIED")
+                    : codeId
+                    ? `${t("FORM_LABEL_VERIFY")} (${countdown})`
+                    : t("FORM_LABEL_GET_CODE")}
                 </Button>
                 <TextField
                   fullWidth
@@ -165,6 +234,7 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
                   label={t("FORM_LABEL_VERIFY_CODE")}
                   value={data?.verifyCode || ""}
                   onChange={(e) => handleChange("verifyCode", e.target.value?.replace(/\D/g, ""))}
+                  disabled={!codeId || isCodeVerified === true}
                 />
               </div>
             )
