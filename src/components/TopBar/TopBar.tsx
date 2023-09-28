@@ -63,8 +63,19 @@ export default function TopBar({ setSideDrawerOpen }: ITopBar) {
     event.stopPropagation();
     const deviceToRemoveFromTopBar = document.getElementById(`${deviceId}`);
     if (deviceToRemoveFromTopBar) deviceToRemoveFromTopBar.style.display = "none";
-    addQueueRequestBody.current = { ...addQueueRequestBody.current, deviceId: deviceId };
-    addQueue();
+
+    addQueueRequestBody.current = {
+      clientsId: [1],
+      subClientsId: [1],
+      destinationId: 1,
+      deviceId: deviceId,
+      carPlateNumber: "1",
+      carBackPlateNumber: "",
+      observations: "",
+      useSMS: false,
+    };
+
+    addQueue().then(() => (addQueueRequestBody.current = null));
   }
 
   return (

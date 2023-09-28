@@ -56,6 +56,7 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
       setCodeId(null);
       setIsCodeVerified(null);
       cardData.current = null;
+      addQueueRequestBody.current = null;
       document.querySelectorAll(".queueCard")?.forEach((card) => card.classList.remove("active"));
     }
 
@@ -75,7 +76,9 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
 
   function handleSubmit() {
     const dataToSubmit = {
-      ...addQueueRequestBody.current,
+      clientsId: [1],
+      subClientsId: [1],
+      destinationId: 1,
       deviceId: !data?.useSMS ? data?.deviceId || availableDevices?.[0]?.id : undefined,
       useSMS: data?.useSMS || false,
       prioritiesId: data?.priorities && data.priorities.length > 0 ? data.priorities : undefined,

@@ -34,7 +34,7 @@ interface QueueContextData {
   queue: InQueueItem[];
   addQueue: () => Promise<any>;
   updateQueue: () => Promise<any>;
-  addQueueRequestBody: MutableRefObject<IAddQueueRequestBody>;
+  addQueueRequestBody: MutableRefObject<IAddQueueRequestBody | null>;
   notifyQueue: () => Promise<any>;
   notifyQueueRequestBody: MutableRefObject<INotifyQueueRequestBody>;
   queueAlert: { [key: string]: string } | null;
@@ -44,16 +44,7 @@ export function QueueProvider({ children }: Props) {
   const [queue, setQueue] = useState<InQueueItem[]>([]);
   const [queueAlert, setQueueAlert] = useState<{ [key: string]: string } | null>(null);
 
-  const addQueueRequestBody = useRef<IAddQueueRequestBody>({
-    clientsId: [1],
-    subClientsId: [1],
-    destinationId: 1,
-    deviceId: undefined,
-    carPlateNumber: "1", //workaround to use premium api as partySize
-    carBackPlateNumber: "", //workaround to use premium api as estimatedTime
-    observations: "",
-    useSMS: false,
-  });
+  const addQueueRequestBody = useRef<IAddQueueRequestBody | null>(null);
 
   const notifyQueueRequestBody = useRef<INotifyQueueRequestBody>({
     id: undefined,
