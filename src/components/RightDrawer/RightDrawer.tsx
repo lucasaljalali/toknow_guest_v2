@@ -9,7 +9,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Dispatch, MutableRefObject, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, Key, MutableRefObject, SetStateAction, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { phonePrefixs } from "../../configuration/phonePrefixs";
 import { useCompany } from "../../contexts/CompanyContext";
@@ -150,45 +150,48 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
 
         <Box component="form" autoComplete="off">
           <FormControlLabel
+            inputMode="none"
             name="useSMS"
             label={t("FORM_LABEL_USE_SMS")}
             labelPlacement="start"
             control={<Switch color="primary" />}
-            value={data?.useSMS || false}
-            checked={data?.useSMS || false}
+            value={data?.useSMS || (!isEditQueue && availableDevices?.length === 0) ? true : false}
+            checked={data?.useSMS || (!isEditQueue && availableDevices?.length === 0) ? true : false}
             onChange={(_event, checked) => handleChange("useSMS", checked)}
-            disabled={isEditQueue}
+            disabled={isEditQueue || (!isEditQueue && availableDevices?.length === 0)}
           />
 
           <TextField
-            autoComplete="true"
             fullWidth
             variant="outlined"
+            type="text"
+            inputProps={{ inputMode: "text" }}
             name="name"
             label={t("FORM_LABEL_NAME")}
             value={data?.name || ""}
             onChange={(e) => handleChange("name", e.target.value?.replace(/[^A-Za-z\s]/g, "")?.slice(0, 50))}
-            type="text"
           />
 
           <TextField
             fullWidth
             variant="outlined"
+            type="text"
+            inputProps={{ inputMode: "decimal" }}
             name="partySize"
             label={t("FORM_LABEL_PARTY_SIZE")}
             value={data?.partySize || ""}
             onChange={(e) => handleChange("partySize", e.target.value?.replace(/\D/g, "")?.slice(0, 3))}
-            type="number"
           />
 
           <div className="formPhoneContainer">
             <Autocomplete
               disableClearable
               fullWidth
+              inputMode="none"
               options={phonePrefixs?.map((prefix) => prefix.id)}
               value={data?.phonePrefix || "+351"}
               onChange={(_event, value) => handleChange("phonePrefix", value)}
-              renderInput={(params) => <TextField {...params} name="phonePrefix" label={t("FORM_LABEL_PREFIX")} />}
+              renderInput={(params) => <TextField {...params} type="text" name="phonePrefix" label={t("FORM_LABEL_PREFIX")} />}
               renderOption={(props, option) => {
                 return (
                   <li {...props} key={option}>
@@ -202,82 +205,89 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
             <TextField
               fullWidth
               variant="outlined"
+              type="text"
+              inputProps={{ inputMode: "tel" }}
               name="phoneNumber"
               label={t("FORM_LABEL_PHONE_NUMBER")}
               value={data?.phoneNumber || ""}
               onChange={(e) => handleChange("phoneNumber", e.target.value?.replace(/\D/g, "")?.slice(0, 11))}
               disabled={(isEditQueue && data?.useSMS) || isCodeVerified === true}
-              type="number"
             />
           </div>
 
-          {data?.useSMS ? (
-            !isEditQueue && (
-              <div className="formPhoneContainer">
-                <Button
-                  id="verifyCodeButton"
-                  variant="outlined"
-                  onClick={handleVerifyCode}
-                  disabled={
-                    data?.phoneNumber == undefined ||
-                    data?.phonePrefix?.length === 0 ||
-                    data?.phoneNumber?.length === 0 ||
-                    (codeId && !data?.verifyCode) ||
-                    (data?.verifyCode && data?.verifyCode?.length < 6) ||
-                    isCodeVerified === true
-                  }
-                  className={isCodeVerified === true ? "verified" : isCodeVerified === false ? "unverified" : undefined}
-                >
-                  {isCodeVerified
-                    ? t("FORM_LABEL_VERIFIED")
-                    : codeId
-                    ? `${t("FORM_LABEL_VERIFY")} (${countdown})`
-                    : t("FORM_LABEL_GET_CODE")}
-                </Button>
-                <TextField
+          {data?.useSMS || availableDevices?.length === 0
+            ? !isEditQueue && (
+                <div className="formPhoneContainer">
+                  <Button
+                    id="verifyCodeButton"
+                    variant="outlined"
+                    onClick={handleVerifyCode}
+                    disabled={
+                      data?.phoneNumber == undefined ||
+                      data?.phonePrefix?.length === 0 ||
+                      data?.phoneNumber?.length === 0 ||
+                      (codeId && !data?.verifyCode) ||
+                      (data?.verifyCode && data?.verifyCode?.length < 6) ||
+                      isCodeVerified === true
+                    }
+                    className={isCodeVerified === true ? "verified" : isCodeVerified === false ? "unverified" : undefined}
+                  >
+                    {isCodeVerified
+                      ? t("FORM_LABEL_VERIFIED")
+                      : codeId
+                      ? `${t("FORM_LABEL_VERIFY")} (${countdown})`
+                      : t("FORM_LABEL_GET_CODE")}
+                  </Button>
+                  <TextField
+                    fullWidth
+                    type="text"
+                    inputProps={{ inputMode: "decimal" }}
+                    variant="outlined"
+                    name="verifyCode"
+                    label={t("FORM_LABEL_VERIFY_CODE")}
+                    value={data?.verifyCode || ""}
+                    onChange={(e) => handleChange("verifyCode", e.target.value?.replace(/\D/g, "")?.slice(0, 6))}
+                    disabled={!codeId || isCodeVerified === true}
+                  />
+                </div>
+              )
+            : ((availableDevices && availableDevices.length > 0) || (isEditQueue && data?.deviceId)) && (
+                <Autocomplete
+                  disableClearable
                   fullWidth
-                  variant="outlined"
-                  name="verifyCode"
-                  label={t("FORM_LABEL_VERIFY_CODE")}
-                  value={data?.verifyCode || ""}
-                  onChange={(e) => handleChange("verifyCode", e.target.value?.replace(/\D/g, "")?.slice(0, 6))}
-                  disabled={!codeId || isCodeVerified === true}
-                  type="number"
+                  inputMode="none"
+                  options={
+                    isEditQueue
+                      ? [
+                          companyConfigs?.formFieldsData?.devices?.find((device) => device.id === data?.deviceId)?.id,
+                          ...(availableDevices?.map((device) => device.id) || []),
+                        ] || []
+                      : availableDevices?.map((device) => device.id) || []
+                  }
+                  value={data?.deviceId || availableDevices?.[0]?.id}
+                  onChange={(_event, value) => handleChange("deviceId", value)}
+                  renderInput={(params) => <TextField {...params} type="text" name="device" label={t("FORM_LABEL_DEVICE")} required />}
+                  getOptionLabel={(option) => `${option}`}
+                  renderOption={(props, option) => {
+                    return (
+                      <li {...props} key={option as Key}>
+                        {companyConfigs?.formFieldsData?.devices?.find((device) => device.id === option)?.label}
+                      </li>
+                    );
+                  }}
+                  disabled={isEditQueue}
                 />
-              </div>
-            )
-          ) : (
-            <Autocomplete
-              disableClearable
-              fullWidth
-              options={
-                (isEditQueue
-                  ? companyConfigs?.formFieldsData?.devices?.map((device) => device.id)
-                  : availableDevices?.map((device) => device.id)) || []
-              }
-              value={data?.deviceId || availableDevices?.[0]?.id}
-              onChange={(_event, value) => handleChange("deviceId", value)}
-              renderInput={(params) => <TextField {...params} name="device" label={t("FORM_LABEL_DEVICE")} required />}
-              getOptionLabel={(option) => `${option}`}
-              renderOption={(props, option) => {
-                return (
-                  <li {...props} key={option}>
-                    {companyConfigs?.formFieldsData?.devices?.find((device) => device.id === option)?.label}
-                  </li>
-                );
-              }}
-              disabled={isEditQueue}
-            />
-          )}
+              )}
 
           <Autocomplete
             disableClearable
             fullWidth
             multiple
+            inputMode="none"
             options={companyConfigs?.formFieldsData?.priorities?.map((priority) => priority.id) || []}
             value={data?.priorities || []}
             onChange={(_event, value) => handleChange("priorities", value)}
-            renderInput={(params) => <TextField {...params} name="priorities" label={t("FORM_LABEL_PRIORITIES")} />}
+            renderInput={(params) => <TextField {...params} type="text" name="priorities" label={t("FORM_LABEL_PRIORITIES")} />}
             getOptionLabel={(option) =>
               t(companyConfigs?.formFieldsData?.priorities?.find((priority) => priority.id === option)?.label || "")
             }
@@ -293,20 +303,24 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
           <TextField
             fullWidth
             variant="outlined"
+            type="text"
+            inputProps={{ inputMode: "text" }}
             name="observations"
             label={t("FORM_LABEL_OBSERVATIONS")}
             value={data?.observations || ""}
             onChange={(e) => handleChange("observations", e.target.value)}
-            type="text"
           />
 
           <Autocomplete
             disableClearable
             fullWidth
+            inputMode="none"
             options={["", "0", "15", "30", "60"]}
             value={data?.estimatedTime || ""}
             onChange={(_event, value) => handleChange("estimatedTime", value)}
-            renderInput={(params) => <TextField {...params} name="estimatedTime" label={t("FORM_LABEL_ESTIMATED_TIME_IN_MIN")} />}
+            renderInput={(params) => (
+              <TextField {...params} type="text" name="estimatedTime" label={t("FORM_LABEL_ESTIMATED_TIME_IN_MIN")} />
+            )}
             renderOption={(props, option) => {
               if (option?.length > 0)
                 return (

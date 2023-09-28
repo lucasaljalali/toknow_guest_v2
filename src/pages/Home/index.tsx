@@ -1,4 +1,4 @@
-import { MouseEvent, useEffect, useRef, useState } from "react";
+import { MouseEvent, TouchEvent, useEffect, useRef, useState } from "react";
 import { Alert, AlertColor, Snackbar, styled } from "@mui/material";
 import { useGesture } from "@use-gesture/react";
 import { useQueue } from "../../contexts/QueueContext";
@@ -117,7 +117,7 @@ export default function Home() {
     }
   }
 
-  function handleCardClick(event: MouseEvent, data: ITransformedInQueueData) {
+  function handleCardClick(event: MouseEvent | TouchEvent, data: ITransformedInQueueData) {
     event.stopPropagation();
 
     if (event.detail === 2) {
@@ -126,7 +126,7 @@ export default function Home() {
     }
   }
 
-  function handleDeviceClick(event: MouseEvent, data: InQueueItem) {
+  function handleDeviceClick(event: MouseEvent | TouchEvent, data: InQueueItem) {
     event.stopPropagation();
     if (event.detail === 2) {
       const clickedDevice = event.currentTarget?.querySelector(".deviceIcon");
