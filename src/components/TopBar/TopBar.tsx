@@ -1,4 +1,4 @@
-import { Dispatch, MouseEvent, SetStateAction, TouchEvent, useRef, useState } from "react";
+import { Dispatch, MouseEvent, SetStateAction, TouchEvent, useEffect, useRef, useState } from "react";
 import { Button, IconButton, Typography } from "@mui/material";
 import { useQueue } from "../../contexts/QueueContext";
 import { useCompany } from "../../contexts/CompanyContext";
@@ -19,6 +19,7 @@ interface ITopBar {
 
 export default function TopBar({ setSideDrawerOpen }: ITopBar) {
   const [devicesOpen, setDevicesOpen] = useState(false);
+  const [scrolling, setScrolling] = useState(false);
   const { companyConfigs } = useCompany();
   const { queue, addQueue, addQueueRequestBody } = useQueue();
   const { t } = useTranslation();
@@ -55,6 +56,10 @@ export default function TopBar({ setSideDrawerOpen }: ITopBar) {
     },
   });
 
+  useEffect(() => {
+    setScrolling(false);
+  }, [devicesOpen]);
+
   function logout() {
     keycloak.logout();
   }
@@ -80,6 +85,14 @@ export default function TopBar({ setSideDrawerOpen }: ITopBar) {
     addQueue().then(() => (addQueueRequestBody.current = null));
   }
 
+  function handleMouseMove(event: MouseEvent) {
+    const container = document.querySelector(".topBarDevicesOptionsContainer");
+
+    if (container && scrolling) {
+      container.scrollLeft -= event.movementX;
+    }
+  }
+
   return (
     <>
       <div className="topBarContainer">
@@ -98,7 +111,9 @@ export default function TopBar({ setSideDrawerOpen }: ITopBar) {
             onClick={(e) => e.stopPropagation()}
             onTouchStart={(e) => e.stopPropagation()}
             onTouchEnd={(e) => e.stopPropagation()}
-            onMouseDown={(e) => console.log(e)}
+            onMouseDown={() => setScrolling(true)}
+            onMouseUp={() => setScrolling(false)}
+            onMouseMove={handleMouseMove}
           >
             {noAvailableDevices && <Typography color={"text.primary"}>{t("GLOBAL_NO_AVAILABLE_OPTIONS")}</Typography>}
             {availableDevices?.map((device) => {
@@ -110,6 +125,9 @@ export default function TopBar({ setSideDrawerOpen }: ITopBar) {
                     id={`${device?.id}`}
                     className="topBarAddDeviceButton"
                     onClick={(e) => handleDeviceClick(e, device?.id)}
+                    onMouseDown={() => setScrolling(true)}
+                    onMouseUp={() => setScrolling(false)}
+                    onMouseMove={handleMouseMove}
                   >
                     <DeviceIcon deviceLabel={device?.id} />
                   </Button>
