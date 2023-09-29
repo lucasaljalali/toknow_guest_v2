@@ -1,5 +1,5 @@
 import { Dispatch, MouseEvent, SetStateAction, TouchEvent, useRef, useState } from "react";
-import { IconButton, Typography } from "@mui/material";
+import { Button, IconButton, Typography } from "@mui/material";
 import { useQueue } from "../../contexts/QueueContext";
 import { useCompany } from "../../contexts/CompanyContext";
 import { useTranslation } from "react-i18next";
@@ -29,7 +29,7 @@ export default function TopBar({ setSideDrawerOpen }: ITopBar) {
   const availableDevices = companyConfigs?.formFieldsData?.devices?.filter((device) => device.isAvailable);
   const noAvailableDevices = availableDevices?.length === 0;
 
-  const bind = useGesture({
+  const bindAddIcon = useGesture({
     onPointerDown: () => {
       pressTimerRef.current = setTimeout(() => {
         // Long press
@@ -59,8 +59,10 @@ export default function TopBar({ setSideDrawerOpen }: ITopBar) {
     keycloak.logout();
   }
 
-  function handleAddDeviceInQueue(event: MouseEvent<HTMLDivElement> | TouchEvent<HTMLDivElement>, deviceId: number | string) {
+  function handleDeviceClick(event: MouseEvent | TouchEvent, deviceId: number | string) {
+    event.preventDefault();
     event.stopPropagation();
+
     const deviceToRemoveFromTopBar = document.getElementById(`${deviceId}`);
     if (deviceToRemoveFromTopBar) deviceToRemoveFromTopBar.style.display = "none";
 
@@ -79,48 +81,56 @@ export default function TopBar({ setSideDrawerOpen }: ITopBar) {
   }
 
   return (
-    <div className="topBarContainer">
-      <div className="buttonsContainer">
-        <ClickAwayListener onClickAway={() => setDevicesOpen(false)}>
-          <IconButton className="roundedPrimaryIconButton" {...bind()}>
-            <AddIcon />
-            <div className={devicesOpen ? "topBarDevicesOptionsContainer active" : "topBarDevicesOptionsContainer"}>
-              {noAvailableDevices && <Typography color={"text.primary"}>{t("GLOBAL_NO_AVAILABLE_OPTIONS")}</Typography>}
-              {availableDevices?.map((device) => {
-                const notAlreadyInQueue = !queue?.some((queueDevice) => queueDevice.id === device.id);
-                if (device?.isAvailable && notAlreadyInQueue) {
-                  return (
-                    <div
-                      key={device?.id}
-                      id={`${device?.id}`}
-                      onClick={(e) => handleAddDeviceInQueue(e, device?.id)}
-                      onTouchEnd={(e) => handleAddDeviceInQueue(e, device?.id)}
-                      className="topBarAddDeviceButton"
-                    >
-                      <DeviceIcon deviceLabel={device?.id} />
-                    </div>
-                  );
-                }
-              })}
-            </div>
+    <>
+      <div className="topBarContainer">
+        <div className="buttonsContainer">
+          <ClickAwayListener onClickAway={() => setDevicesOpen(false)}>
+            <IconButton className="roundedPrimaryIconButton" {...bindAddIcon()}>
+              <AddIcon />
+            </IconButton>
+          </ClickAwayListener>
+          <IconButton className="roundedPrimaryIconButton">
+            <QrCodeIcon />
           </IconButton>
-        </ClickAwayListener>
-        <IconButton className="roundedPrimaryIconButton">
-          <QrCodeIcon />
-        </IconButton>
-      </div>
 
-      <img onClick={logout} src={hanamiLogo} className="mainLogo" />
+          <div
+            className={devicesOpen ? "topBarDevicesOptionsContainer active" : "topBarDevicesOptionsContainer"}
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+            onMouseDown={(e) => console.log(e)}
+          >
+            {noAvailableDevices && <Typography color={"text.primary"}>{t("GLOBAL_NO_AVAILABLE_OPTIONS")}</Typography>}
+            {availableDevices?.map((device) => {
+              const notAlreadyInQueue = !queue?.some((queueDevice) => queueDevice.id === device.id);
+              if (device?.isAvailable && notAlreadyInQueue) {
+                return (
+                  <Button
+                    key={device?.id}
+                    id={`${device?.id}`}
+                    className="topBarAddDeviceButton"
+                    onClick={(e) => handleDeviceClick(e, device?.id)}
+                  >
+                    <DeviceIcon deviceLabel={device?.id} />
+                  </Button>
+                );
+              }
+            })}
+          </div>
+        </div>
 
-      <div className="buttonsContainer">
-        <IconButton className="roundedSecondaryIconButton">
-          <VisibilityIcon />
-        </IconButton>
-        <IconButton className="roundedSecondaryIconButton">
-          <FilterAltIcon />
-        </IconButton>
-        <IconButton className="roundedSecondaryIconButton">{queue?.length}</IconButton>
+        <img onClick={logout} src={hanamiLogo} className="mainLogo" />
+
+        <div className="buttonsContainer">
+          <IconButton className="roundedSecondaryIconButton">
+            <VisibilityIcon />
+          </IconButton>
+          <IconButton className="roundedSecondaryIconButton">
+            <FilterAltIcon />
+          </IconButton>
+          <IconButton className="roundedSecondaryIconButton">{queue?.length}</IconButton>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

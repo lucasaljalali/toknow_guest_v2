@@ -68,27 +68,10 @@ body {
   user-select: none; /* Standard syntax */
 }
 
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-/* Firefox */
-input[type='number'] {
-  appearance: none;
-}
-
 a {
   color: inherit;
   text-decoration: none;
 }
-
-/* .pageContainer {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-} */
 
 .topBarContainer {
   position: relative;
@@ -221,6 +204,10 @@ a {
   padding: .25rem;
 }
 
+.queueCardItem:is(.MuiButtonBase-root) {
+  width: fit-content;
+}
+
 .queueCardItem, .queueFilterContainer p {
   display: flex;
   flex: 1;
@@ -291,12 +278,15 @@ a {
 .topBarDevicesOptionsContainer {
   position: absolute;
   height: 5.5rem;
-  width: fit-content;
-  max-width: calc(100vw - 7rem);
+  width: auto;
+  max-width: calc(100vw - 8rem);
+  top: 50%;
   left: 5rem;
+  transform: translate(0, -50%);
   z-index: 2;
   border-radius: var(--border-radius);
   opacity: 0;
+  visibility: hidden;
   transition: opacity 0.3s ease-in-out;
   pointer-events: none;
   background: var(--background-color-secondary);
@@ -307,18 +297,23 @@ a {
   gap: 1.5rem;
   padding: .5rem 1.5rem;
   overflow-y: hidden;
-  overflow-x: auto;
+  overflow-x: scroll ;
   -ms-overflow-style: none;  
   scrollbar-width: none;
 }
 
 .topBarDevicesOptionsContainer.active {
   opacity: 1;
-  pointer-events: initial;
+  visibility: visible;
+  pointer-events: visible;
 }
 
 .topBarDevicesOptionsContainer::-webkit-scrollbar {
   display: none;
+}
+
+.topBarDevicesOptionsContainer button {
+  min-width: fit-content;
 }
 
 .topBarAddDeviceButton {

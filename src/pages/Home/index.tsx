@@ -1,4 +1,4 @@
-import { MouseEvent, TouchEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, AlertColor, Snackbar, styled } from "@mui/material";
 import { useGesture } from "@use-gesture/react";
 import { useQueue } from "../../contexts/QueueContext";
@@ -19,6 +19,9 @@ export default function Home() {
   const cardData = useRef<ITransformedInQueueData | null>(null);
 
   const drawerWidth = document?.getElementById("rightDrawer")?.querySelector(".MuiPaper-root")?.clientWidth;
+
+  const doubleTouchThreshold = 300;
+  let firstTouchTimestamp = 0;
 
   const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
     open?: boolean;
@@ -50,6 +53,26 @@ export default function Home() {
 
     const bind = useGesture(
       {
+        onTouchEnd: ({ event }) => {
+          event.preventDefault();
+          event.stopPropagation();
+          if (firstTouchTimestamp === 0) {
+            firstTouchTimestamp = event.timeStamp;
+          } else {
+            const timeDifference = event.timeStamp - firstTouchTimestamp;
+
+            if (timeDifference <= doubleTouchThreshold) {
+              // This is a double touch
+              handleCardDoubleClick(event, clientData);
+              // Reset the timestamp
+              firstTouchTimestamp = 0;
+              return;
+            }
+          }
+          // If it's not a double touch, reset the timestamp
+          firstTouchTimestamp = event.timeStamp;
+        },
+
         onDrag: ({ movement: [dx], last }) => {
           const isToRemoveLeft = dx < -window.innerWidth / 4;
           const isToRemoveRight = dx > window.innerWidth / 4;
@@ -92,8 +115,15 @@ export default function Home() {
     return (
       <div className="queueHiddenTrashContainer">
         <DeleteForeverIcon className="queueHiddenTrash" />
-        <div ref={cardRef} id={String(clientData.id)} className="allCardsTypesContainer" style={{ touchAction: "pan-y" }} {...bind()}>
-          <QueueCard key={clientData.id} data={transformedData} onCardClick={handleCardClick} onDeviceClick={handleDeviceClick} />
+        <div
+          ref={cardRef}
+          id={String(clientData.id)}
+          className="allCardsTypesContainer"
+          style={{ touchAction: "pan-y" }}
+          {...bind()}
+          onClick={(e) => handleCardClick(e, clientData)}
+        >
+          <QueueCard key={clientData.id} data={transformedData} />
         </div>
       </div>
     );
@@ -117,36 +147,23 @@ export default function Home() {
     }
   }
 
-  function handleCardClick(event: MouseEvent | TouchEvent, data: ITransformedInQueueData) {
+  function handleCardClick(event: any, data: ITransformedInQueueData) {
+    event.preventDefault();
     event.stopPropagation();
-
     if (event.detail === 2) {
-      cardData.current = data;
-      setSideDrawerOpen((prev) => !prev);
+      handleCardDoubleClick(event, data);
     }
   }
 
-  function handleDeviceClick(event: MouseEvent | TouchEvent, data: InQueueItem) {
+  function handleCardDoubleClick(event: any, data: ITransformedInQueueData) {
+    event.preventDefault();
     event.stopPropagation();
-    if (event.detail === 2) {
-      const clickedDevice = event.currentTarget?.querySelector(".deviceIcon");
-      clickedDevice?.classList.add("active");
-      setTimeout(() => {
-        clickedDevice?.classList.remove("active");
-      }, 2000);
-      handleNotifyDevice(data?.id, 2, data?.currentDestinationId, 2);
-    }
-  }
-
-  function handleNotifyDevice(queueId?: string | number, actionId?: number, destinationId?: number, messageId?: number) {
-    if (queueId) {
-      notifyQueueRequestBody.current = { id: queueId, actionId: actionId, destinationId: destinationId, messageId: messageId };
-      notifyQueue();
-    }
+    cardData.current = data;
+    setSideDrawerOpen((prev) => !prev);
   }
 
   return (
-    <div className="pageContainer">
+    <>
       <Main open={sideDrawerOpen}>
         <TopBar setSideDrawerOpen={setSideDrawerOpen} />
 
@@ -160,6 +177,6 @@ export default function Home() {
       </Main>
 
       <RightDrawer open={sideDrawerOpen} setOpen={setSideDrawerOpen} cardData={cardData} />
-    </div>
+    </>
   );
 }
