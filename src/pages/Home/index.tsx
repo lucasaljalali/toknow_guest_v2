@@ -1,20 +1,41 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Alert, AlertColor, Snackbar, styled } from "@mui/material";
 import { useGesture } from "@use-gesture/react";
 import { useQueue } from "../../contexts/QueueContext";
 import { useCompany } from "../../contexts/CompanyContext";
 import { InQueueItem } from "../../services/api/dtos/Queue";
 import { ITransformedInQueueData, transformInQueueData } from "./utils/transformInQueueData";
-import QueueFilter from "../../components/Filter/QueueFilter";
+import { filtersSelection, sideDrawerOpen } from "../../store/signalsStore";
 import QueueCard from "../../components/QueueCard/QueueCard";
 import TopBar from "../../components/TopBar/TopBar";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import RightDrawer from "../../components/RightDrawer/RightDrawer";
+import QueueOrdinations from "../../components/Ordinations/QueueOrdinations";
 
 export default function Home() {
-  const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
+  // const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
   const { queue, notifyQueue, notifyQueueRequestBody, queueAlert, setQueueAlert } = useQueue();
   const { refetchConfigs, companyConfigs } = useCompany();
+
+  const transformedQueue = queue?.map((queueItem) => transformInQueueData(queueItem, companyConfigs));
+
+  const filteredQueue = transformedQueue?.filter((transformedQueueItem) => {
+    const filteredProps = Object.keys(filtersSelection.value);
+
+    const matches = filteredProps?.filter((prop) => {
+      const filteredValue = filtersSelection.value[prop] as any[];
+
+      let transformedQueueItemValue = transformedQueueItem[prop as keyof ITransformedInQueueData];
+
+      if (Array.isArray(transformedQueueItemValue)) {
+        return transformedQueueItemValue?.find((value) => filteredValue?.includes(value));
+      } else {
+        return filteredValue.includes(transformedQueueItemValue);
+      }
+    });
+
+    return matches.length === filteredProps.length;
+  });
 
   const cardData = useRef<ITransformedInQueueData | null>(null);
 
@@ -26,6 +47,7 @@ export default function Home() {
   const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
     open?: boolean;
   }>(({ theme, open }) => ({
+    minHeight: "100vh",
     flexGrow: 1,
     padding: theme.spacing(3),
     transition: theme.transitions.create("margin", {
@@ -63,7 +85,7 @@ export default function Home() {
 
             if (timeDifference <= doubleTouchThreshold) {
               // This is a double touch
-              handleCardDoubleClick(event, clientData);
+              handleCardDoubleClick(event, transformedData);
               // Reset the timestamp
               firstTouchTimestamp = 0;
               return;
@@ -91,7 +113,7 @@ export default function Home() {
 
             if (last) {
               if (isToRemoveLeft || isToRemoveRight) {
-                onRemove(clientData.id, 6, clientData.currentDestinationId, 6);
+                onRemove(transformedData.id, 6, transformedData.currentDestinationId, 6);
                 if (redBackground) redBackground.style.opacity = "0";
                 cardRef.current.style.left = isToRemoveLeft ? `-${window.innerWidth}px` : `${window.innerWidth}px`;
               } else {
@@ -117,13 +139,13 @@ export default function Home() {
         <DeleteForeverIcon className="queueHiddenTrash" />
         <div
           ref={cardRef}
-          id={String(clientData.id)}
+          id={String(transformedData.id)}
           className="allCardsTypesContainer"
           style={{ touchAction: "pan-y" }}
           {...bind()}
-          onClick={(e) => handleCardClick(e, clientData)}
+          onClick={(e) => handleCardClick(e, transformedData)}
         >
-          <QueueCard key={clientData.id} data={transformedData} />
+          <QueueCard key={transformedData.id} data={transformedData} />
         </div>
       </div>
     );
@@ -132,7 +154,7 @@ export default function Home() {
   function SwipeableList({ queue, onRemove }: { queue: InQueueItem[]; onRemove: Function }) {
     return (
       <div className="queueContainer">
-        <QueueFilter />
+        <QueueOrdinations />
         {queue?.map((clientData) => (
           <SwipeableCard key={clientData.id} clientData={clientData} onRemove={onRemove} />
         ))}
@@ -159,15 +181,15 @@ export default function Home() {
     event.preventDefault();
     event.stopPropagation();
     cardData.current = data;
-    setSideDrawerOpen((prev) => !prev);
+    sideDrawerOpen.value = !sideDrawerOpen.value;
   }
 
   return (
     <>
-      <Main open={sideDrawerOpen}>
-        <TopBar setSideDrawerOpen={setSideDrawerOpen} />
+      <Main open={sideDrawerOpen.value}>
+        <TopBar />
 
-        <SwipeableList queue={queue} onRemove={handleRemoveDeviceOfQueue} />
+        <SwipeableList queue={filteredQueue} onRemove={handleRemoveDeviceOfQueue} />
 
         <Snackbar open={queueAlert !== null} autoHideDuration={6000} onClose={() => setQueueAlert(null)}>
           <Alert variant="filled" severity={queueAlert ? (Object.keys(queueAlert)[0] as AlertColor) : undefined}>
@@ -176,7 +198,7 @@ export default function Home() {
         </Snackbar>
       </Main>
 
-      <RightDrawer open={sideDrawerOpen} setOpen={setSideDrawerOpen} cardData={cardData} />
+      <RightDrawer cardData={cardData} />
     </>
   );
 }

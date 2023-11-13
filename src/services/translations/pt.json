@@ -5,6 +5,10 @@
     "FILTER_LABEL_WAITING": "Espera",
     "FILTER_LABEL_ESTIMATED": "Estimado",
     "FILTER_LABEL_DEVICE": "Dispositivo",
+    "FILTER_LABEL_STATE": "Estado",
+
+    "QUEUE_LABEL_NOTIFIED": "Notificado",
+    "QUEUE_LABEL_WAITING": "A aguardar",
 
     "FORM_LABEL_ADD_TO_QUEUE": "ADICIONAR À FILA",
     "FORM_LABEL_USE_SMS": "Usar SMS?",
@@ -46,5 +50,7 @@
 
     "GLOBAL_NO_AVAILABLE_OPTIONS": "Sem opções disponíveis",
     "GLOBAL_SUCCESS_MESSAGE": "Sucesso!",
-    "GLOBAL_ERROR_MESSAGE": "Erro!"
+    "GLOBAL_ERROR_MESSAGE": "Erro!",
+    "GLOBAL_LABEL_CLEAR": "Limpar"
+
 }

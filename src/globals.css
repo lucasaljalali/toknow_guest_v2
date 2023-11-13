@@ -79,6 +79,7 @@ a {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 2rem;
+  z-index: 10;
 }
 
 .buttonsContainer {
@@ -90,8 +91,7 @@ a {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: 10vw;
-  max-width: 10rem;
+  width: 10rem;
 }
 
 .MuiIconButton-root:is(.roundedPrimaryIconButton) {
@@ -111,6 +111,10 @@ a {
   height: 4rem;
   color: var(--text-color-secondary);
   box-shadow: var(--shadow-raised);
+}
+
+.MuiIconButton-root:is(.defaultCursor) {
+  cursor: default;
 }
 
 .MuiTypography-root:is(.partySizeTag) {
@@ -142,13 +146,13 @@ a {
   display: none;
 }
 
-.queueFilterContainer {
+.queueOrdinationContainer {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.MuiTypography-root:is(.queueFilterOption) {
+.MuiTypography-root:is(.queueOrdinationOption) {
   display: flex;
   align-items: center;
   line-height: normal;
@@ -159,7 +163,7 @@ a {
   transform: rotate(180deg);
 }
 
-.MuiSvgIcon-root:is(.queueFilterOptionIcon) {
+.MuiSvgIcon-root:is(.queueOrdinationOptionIcon) {
   font-size: 1rem;
 }
 
@@ -208,13 +212,13 @@ a {
   width: fit-content;
 }
 
-.queueCardItem, .queueFilterContainer p {
+.queueCardItem, .queueOrdinationContainer p {
   display: flex;
   flex: 1;
   text-align: left;
 }
 
-.queueCardItem:first-child, .queueCardItem:last-child, .queueFilterContainer p:first-child, .queueFilterContainer p:last-child {
+.queueCardItem:first-child, .queueCardItem:last-child, .queueOrdinationContainer p:first-child, .queueOrdinationContainer p:last-child {
   flex: .75;
   justify-content: center;
 }
@@ -384,4 +388,30 @@ a {
 #formSubmitButton {
   width: 100%;
   height: 3rem;
+}
+
+.filterContainer {
+  position: relative;
+}
+
+.filterDropdown {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  transform: translateY(105%);
+  width: 15rem;
+  height: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-raised);
+  backdrop-filter: blur(10.9px);
+  -webkit-backdrop-filter: blur(10.9px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }

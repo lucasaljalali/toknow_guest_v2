@@ -2,8 +2,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { QueryObserverResult, RefetchOptions, RefetchQueryFilters, useQuery } from "react-query";
 import { axiosInstance } from "../services/api/baseConfigs";
 import { InCompanyConfigs } from "../services/api/dtos/CompanyConfigs";
-import keycloak from "../services/keycloak/keycloak";
 import { KeycloakTokenParsed } from "keycloak-js";
+import keycloak from "../services/keycloak/keycloak";
 import i18n from "../services/translations/i18n";
 import Loading from "../components/Loading/Loading";
 

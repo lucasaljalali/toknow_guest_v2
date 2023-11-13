@@ -17,7 +17,6 @@ export default function QueueCard({ data }: IQueueLongCard) {
   function handleDeviceClick(event: MouseEvent | TouchEvent, data: InQueueItem) {
     event.stopPropagation();
     event.preventDefault();
-    console.log(event.isPropagationStopped());
 
     if (firstTouchTimestamp === 0) {
       firstTouchTimestamp = event.timeStamp;

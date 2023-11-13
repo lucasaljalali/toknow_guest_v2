@@ -1,23 +1,20 @@
-import { Dispatch, MouseEvent, SetStateAction, TouchEvent, useEffect, useRef, useState } from "react";
+import { MouseEvent, TouchEvent, useEffect, useRef, useState } from "react";
 import { Button, IconButton, Typography } from "@mui/material";
 import { useQueue } from "../../contexts/QueueContext";
 import { useCompany } from "../../contexts/CompanyContext";
 import { useTranslation } from "react-i18next";
 import { ClickAwayListener } from "@mui/base/ClickAwayListener";
 import { useGesture } from "@use-gesture/react";
+import { sideDrawerOpen } from "../../store/signalsStore";
 import keycloak from "../../services/keycloak/keycloak";
 import AddIcon from "@mui/icons-material/Add";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import QrCodeIcon from "@mui/icons-material/QrCode";
+// import QrCodeIcon from "@mui/icons-material/QrCode";
 import hanamiLogo from "../../assets/images/hanami.png";
 import DeviceIcon from "../DeviceIcon/DeviceIcon";
+import Filters from "../Filters/Filters";
 
-interface ITopBar {
-  setSideDrawerOpen: Dispatch<SetStateAction<boolean>>;
-}
-
-export default function TopBar({ setSideDrawerOpen }: ITopBar) {
+export default function TopBar() {
   const [devicesOpen, setDevicesOpen] = useState(false);
   const [scrolling, setScrolling] = useState(false);
   const { companyConfigs } = useCompany();
@@ -34,7 +31,7 @@ export default function TopBar({ setSideDrawerOpen }: ITopBar) {
     onPointerDown: () => {
       pressTimerRef.current = setTimeout(() => {
         // Long press
-        setSideDrawerOpen((prev) => !prev);
+        sideDrawerOpen.value = !sideDrawerOpen.value;
       }, longPressDuration);
     },
     onPointerUp: () => {
@@ -42,7 +39,7 @@ export default function TopBar({ setSideDrawerOpen }: ITopBar) {
         if (pressTimerRef.current < longPressDuration) {
           // Fast click
           setDevicesOpen((prev) => !prev);
-          setSideDrawerOpen((prev) => (prev ? false : prev));
+          if (sideDrawerOpen.value === true) sideDrawerOpen.value = false;
         }
         clearTimeout(pressTimerRef.current);
         pressTimerRef.current = null;
@@ -102,9 +99,9 @@ export default function TopBar({ setSideDrawerOpen }: ITopBar) {
               <AddIcon />
             </IconButton>
           </ClickAwayListener>
-          <IconButton className="roundedPrimaryIconButton">
+          {/* <IconButton className="roundedPrimaryIconButton">
             <QrCodeIcon />
-          </IconButton>
+          </IconButton> */}
 
           <div
             className={devicesOpen ? "topBarDevicesOptionsContainer active" : "topBarDevicesOptionsContainer"}
@@ -137,16 +134,16 @@ export default function TopBar({ setSideDrawerOpen }: ITopBar) {
           </div>
         </div>
 
-        <img onClick={logout} src={hanamiLogo} className="mainLogo" />
+        <img onClick={logout} src={hanamiLogo} className="mainLogo" style={{ display: sideDrawerOpen.value ? "none" : "block" }} />
 
         <div className="buttonsContainer">
           <IconButton className="roundedSecondaryIconButton">
             <VisibilityIcon />
           </IconButton>
-          <IconButton className="roundedSecondaryIconButton">
-            <FilterAltIcon />
-          </IconButton>
-          <IconButton className="roundedSecondaryIconButton">{queue?.length}</IconButton>
+
+          <Filters />
+
+          <IconButton className="roundedSecondaryIconButton defaultCursor">{queue?.length}</IconButton>
         </div>
       </div>
     </>

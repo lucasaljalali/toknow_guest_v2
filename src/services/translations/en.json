@@ -5,6 +5,10 @@
     "FILTER_LABEL_WAITING": "Waiting",
     "FILTER_LABEL_ESTIMATED": "Estimated",
     "FILTER_LABEL_DEVICE": "Device",
+    "FILTER_LABEL_STATE": "State",
+
+    "QUEUE_LABEL_NOTIFIED": "Notified",
+    "QUEUE_LABEL_WAITING": "Waiting",
     
     "FORM_LABEL_ADD_TO_QUEUE": "ADD TO QUEUE",
     "FORM_LABEL_USE_SMS": "Use SMS?",
@@ -46,5 +50,6 @@
 
     "GLOBAL_NO_AVAILABLE_OPTIONS": "No available options",
     "GLOBAL_SUCCESS_MESSAGE": "Success!",
-    "GLOBAL_ERROR_MESSAGE": "Error!"
+    "GLOBAL_ERROR_MESSAGE": "Error!",
+    "GLOBAL_LABEL_CLEAR": "Clear"
 }

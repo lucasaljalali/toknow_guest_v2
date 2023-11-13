@@ -9,21 +9,21 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Dispatch, Key, MutableRefObject, SetStateAction, useEffect, useState } from "react";
+import { Key, MutableRefObject, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { phonePrefixs } from "../../configuration/phonePrefixs";
 import { useCompany } from "../../contexts/CompanyContext";
 import { useQueue } from "../../contexts/QueueContext";
 import { ITransformedInQueueData } from "../../pages/Home/utils/transformInQueueData";
 import { axiosInstance } from "../../services/api/baseConfigs";
+import { sideDrawerOpen } from "../../store/signalsStore";
+import { effect } from "@preact/signals-react";
 
 interface IRightDrawer {
-  open: boolean;
-  setOpen: Dispatch<SetStateAction<boolean>>;
   cardData: MutableRefObject<ITransformedInQueueData | null>;
 }
 
-export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
+export default function RightDrawer({ cardData }: IRightDrawer) {
   const [data, setData] = useState<ITransformedInQueueData | null>(null);
   const [codeId, setCodeId] = useState<number | null>(null);
   const [isCodeVerified, setIsCodeVerified] = useState<boolean | null>(null);
@@ -49,8 +49,8 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
     }
   }, [cardData.current]);
 
-  useEffect(() => {
-    if (!open) {
+  effect(() => {
+    if (sideDrawerOpen.value === false && data) {
       setData(null);
       setCountdown(0);
       setCodeId(null);
@@ -59,12 +59,12 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
       addQueueRequestBody.current = null;
       document.querySelectorAll(".queueCard")?.forEach((card) => card.classList.remove("active"));
     }
-
-    if (open && cardData.current?.id) {
+    if (sideDrawerOpen.value === true && cardData.current?.id) {
       const clickedCard = document.getElementById(`${cardData.current.id}`)?.querySelector(".queueCard");
       clickedCard?.classList.add("active");
+      return;
     }
-  }, [open]);
+  });
 
   useEffect(() => {
     if (countdown > 0) {
@@ -93,7 +93,7 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
 
     addQueueRequestBody.current = dataToSubmit;
     (isEditQueue ? updateQueue() : addQueue()).then(() => {
-      setOpen(false);
+      sideDrawerOpen.value = false;
     });
   }
 
@@ -133,14 +133,14 @@ export default function RightDrawer({ open, setOpen, cardData }: IRightDrawer) {
   }
 
   return (
-    <ClickAwayListener onClickAway={() => setOpen(false)}>
+    <ClickAwayListener onClickAway={() => (sideDrawerOpen.value = false)}>
       <SwipeableDrawer
         id="rightDrawer"
         variant="persistent"
         anchor="right"
-        open={open}
-        onClose={() => setOpen(false)}
-        onOpen={() => setOpen(true)}
+        open={sideDrawerOpen.value}
+        onClose={() => (sideDrawerOpen.value = false)}
+        onOpen={() => (sideDrawerOpen.value = true)}
       >
         <Typography variant="h6" className="drawerTitle">
           {isEditQueue
