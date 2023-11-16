@@ -1,13 +1,13 @@
 import { Badge, Button, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import { filterBadgeValue, filtersOpen, filtersSelection } from "../../store/signalsStore";
-// import { ClickAwayListener } from "@mui/base/ClickAwayListener";
+import { ClickAwayListener } from "@mui/base/ClickAwayListener";
 import { filtersOptions } from "../../store/constants";
 import { useTranslation } from "react-i18next";
 import { useQueue } from "../../contexts/QueueContext";
 import { transformInQueueData } from "../../pages/Home/utils/transformInQueueData";
 import { useCompany } from "../../contexts/CompanyContext";
-import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import { effect } from "@preact/signals-react";
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
 
 export default function Filters() {
   const { t } = useTranslation();
@@ -31,6 +31,7 @@ export default function Filters() {
 
   function handleClear() {
     filtersSelection.value = {};
+    filtersOpen.value === false;
   }
 
   effect(() => {
@@ -39,16 +40,15 @@ export default function Filters() {
   });
 
   return (
-    <div className="filterContainer">
-      <IconButton className="roundedSecondaryIconButton" onClick={() => (filtersOpen.value = !filtersOpen.value)}>
-        <FilterAltIcon />
-      </IconButton>
+    <ClickAwayListener onClickAway={() => (filtersOpen.value = false)}>
+      <div className="filterContainer">
+        <IconButton className="roundedSecondaryIconButton" onClick={() => (filtersOpen.value = !filtersOpen.value)}>
+          <FilterAltIcon />
+        </IconButton>
 
-      <Badge badgeContent={String(filterBadgeValue.value)}></Badge>
+        {filterBadgeValue.value > 0 && <Badge id={"filterBadge"} badgeContent={String(filterBadgeValue.value)}></Badge>}
 
-      {filtersOpen.value === true && (
-        // <ClickAwayListener onClickAway={() => (filtersOpen.value = false)}>
-        <div className="filterDropdown glass">
+        <div id="filterDropdown" className={filtersOpen.value === true ? "open glass" : "glass"}>
           {filtersOptions.map((filter) => {
             const options = transformedQueue?.flatMap((obj) => obj[filter.queueValueKey as keyof object]);
             const uniqueOptions = [...new Set(options)];
@@ -77,8 +77,7 @@ export default function Filters() {
             {t("GLOBAL_LABEL_CLEAR")}
           </Button>
         </div>
-        // </ClickAwayListener>
-      )}
-    </div>
+      </div>
+    </ClickAwayListener>
   );
 }

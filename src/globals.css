@@ -394,7 +394,7 @@ a {
   position: relative;
 }
 
-.filterDropdown {
+#filterDropdown {
   position: absolute;
   bottom: 0;
   right: 0;
@@ -405,6 +405,9 @@ a {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: .3s ease-in-out;
 }
 
 .glass {
@@ -414,4 +417,20 @@ a {
   backdrop-filter: blur(10.9px);
   -webkit-backdrop-filter: blur(10.9px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.open {
+  opacity: 1 !important;
+  pointer-events: all !important;
+}
+
+#filterBadge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+#filterBadge span {
+  background: var(--primary-color-dark);
+  transform: translate(100%, -100%);
 }
