@@ -421,7 +421,7 @@ a {
 
 .open {
   opacity: 1 !important;
-  pointer-events: all !important;
+  pointer-events: auto !important;
 }
 
 #filterBadge {

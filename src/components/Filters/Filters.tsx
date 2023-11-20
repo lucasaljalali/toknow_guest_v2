@@ -34,13 +34,20 @@ export default function Filters() {
     filtersOpen.value === false;
   }
 
+  function handleClickAway(event: MouseEvent | TouchEvent) {
+    //condition is a workaround because when clicking the MUI Select it's clicking on the body tag
+    if (event.target !== document.body) {
+      filtersOpen.value = false;
+    }
+  }
+
   effect(() => {
     filterBadgeValue.value = Object.keys(filtersSelection.value).length || 0;
     sessionStorage.setItem("filtersSelection", JSON.stringify(filtersSelection.value));
   });
 
   return (
-    <ClickAwayListener onClickAway={() => (filtersOpen.value = false)}>
+    <ClickAwayListener onClickAway={handleClickAway}>
       <div className="filterContainer">
         <IconButton className="roundedSecondaryIconButton" onClick={() => (filtersOpen.value = !filtersOpen.value)}>
           <FilterAltIcon />
@@ -54,7 +61,7 @@ export default function Filters() {
             const uniqueOptions = [...new Set(options)];
 
             return (
-              <FormControl fullWidth key={filter.label}>
+              <FormControl fullWidth key={filter.label} disabled={uniqueOptions?.length === 0}>
                 <InputLabel id={filter.label}>{t(filter.label)}</InputLabel>
                 <Select
                   multiple

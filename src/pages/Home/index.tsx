@@ -5,7 +5,7 @@ import { useQueue } from "../../contexts/QueueContext";
 import { useCompany } from "../../contexts/CompanyContext";
 import { InQueueItem } from "../../services/api/dtos/Queue";
 import { ITransformedInQueueData, transformInQueueData } from "./utils/transformInQueueData";
-import { filtersSelection, sideDrawerOpen } from "../../store/signalsStore";
+import { filtersOpen, filtersSelection, sideDrawerOpen } from "../../store/signalsStore";
 import QueueCard from "../../components/QueueCard/QueueCard";
 import TopBar from "../../components/TopBar/TopBar";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
@@ -172,6 +172,9 @@ export default function Home() {
   function handleCardClick(event: any, data: ITransformedInQueueData) {
     event.preventDefault();
     event.stopPropagation();
+    if (filtersOpen.value === true) {
+      filtersOpen.value = false;
+    }
     if (event.detail === 2) {
       handleCardDoubleClick(event, data);
     }
