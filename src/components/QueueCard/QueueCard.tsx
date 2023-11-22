@@ -3,6 +3,7 @@ import { ITransformedInQueueData } from "../../pages/Home/utils/transformInQueue
 import { Button, Typography } from "@mui/material";
 import { useQueue } from "../../contexts/QueueContext";
 import { InQueueItem } from "../../services/api/dtos/Queue";
+import { queueCardSize } from "../../store/signalsStore";
 import DeviceIcon from "../DeviceIcon/DeviceIcon";
 
 interface IQueueLongCard {
@@ -57,34 +58,44 @@ export default function QueueCard({ data }: IQueueLongCard) {
       notifyQueue();
     }
   }
-
+  //TODO: the card size options getting the state from queueCardSize.value
   return (
-    <div className="queueCard queueLongCardContainer">
-      <div className="queueCardItem">
-        <Typography className="partySizeTag">{data?.partySize}</Typography>
-      </div>
-      <div className="queueCardItem">
-        <Typography variant="subtitle1">{data?.name}</Typography>
-      </div>
-      <div className="queueCardItem">
-        <div className="arrayToStringLines">
-          {data?.prioritiesLabels?.map((priority, index) => (
-            <Typography key={index} variant="caption">
-              {priority}
-            </Typography>
-          ))}
+    <div className={`queueCard`}>
+      {queueCardSize.value !== "small" && (
+        <div className="queueCardItem">
+          <Typography className="partySizeTag">{data?.partySize}</Typography>
         </div>
-      </div>
-      <div className="queueCardItem">
-        <Typography variant="h5">{data?.waitingTimeInMinutes ? `${data.waitingTimeInMinutes}m` : undefined}</Typography>
-      </div>
-      <div className="queueCardItem">
-        <Typography variant="h5">{data?.estimatedTime ? `${data.estimatedTime}m` : undefined}</Typography>
-      </div>
+      )}
+      {queueCardSize.value === "large" && (
+        <>
+          <div className="queueCardItem">
+            <Typography variant="subtitle1">{data?.name}</Typography>
+          </div>
+          <div className="queueCardItem">
+            <div className="arrayToStringLines">
+              {data?.prioritiesLabels?.map((priority, index) => (
+                <Typography key={index} variant="caption">
+                  {priority}
+                </Typography>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+      {queueCardSize.value !== "small" && (
+        <div className="queueCardItem">
+          <Typography variant="h5">{data?.waitingTimeInMinutes ? `${data.waitingTimeInMinutes}m` : undefined}</Typography>
+        </div>
+      )}
+      {queueCardSize.value === "large" && (
+        <div className="queueCardItem">
+          <Typography variant="h5">{data?.estimatedTime ? `${data.estimatedTime}m` : undefined}</Typography>
+        </div>
+      )}
       <div className="queueCardItem">
         <Button onClick={(e) => handleDeviceClick(e, data)} onTouchEnd={(e) => handleDeviceClick(e, data)}>
           <DeviceIcon
-            lastNotificationTimeInMinutes={data?.lastNotificationTimeInMinutes}
+            time={queueCardSize.value === "small" ? data?.waitingTimeInMinutes : data?.lastNotificationTimeInMinutes}
             useSMS={data?.useSMS}
             deviceLabel={data?.deviceLabel}
             notifed={data?.notifed}

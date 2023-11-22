@@ -1,4 +1,4 @@
-export const ordinationsOptions = [
+export const largeCardOrdinationsOptions = [
   "FILTER_LABEL_QTD",
   "FILTER_LABEL_NAME",
   "FILTER_LABEL_PRIORITY",
@@ -6,6 +6,8 @@ export const ordinationsOptions = [
   "FILTER_LABEL_ESTIMATED",
   "FILTER_LABEL_DEVICE",
 ];
+
+export const mediumCardOrdinationsOptions = ["FILTER_LABEL_QTD", "FILTER_LABEL_WAITING", "FILTER_LABEL_DEVICE"];
 
 export const filtersOptions = [
   { label: "FILTER_LABEL_QTD", queueValueKey: "carPlate" },

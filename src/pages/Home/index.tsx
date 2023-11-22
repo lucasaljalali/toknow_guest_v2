@@ -5,13 +5,13 @@ import { useQueue } from "../../contexts/QueueContext";
 import { useCompany } from "../../contexts/CompanyContext";
 import { InQueueItem } from "../../services/api/dtos/Queue";
 import { ITransformedInQueueData, transformInQueueData } from "./utils/transformInQueueData";
-import { filtersOpen, filtersSelection, sideDrawerOpen, windowWidth } from "../../store/signalsStore";
+import { filtersOpen, filtersSelection, queueCardSize, sideDrawerOpen, windowWidth } from "../../store/signalsStore";
+import { TQueueCardSize } from "../../store/types";
 import QueueCard from "../../components/QueueCard/QueueCard";
 import TopBar from "../../components/TopBar/TopBar";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import RightDrawer from "../../components/RightDrawer/RightDrawer";
 import QueueOrdinations from "../../components/Ordinations/QueueOrdinations";
-import { effect } from "@preact/signals-react";
 
 export default function Home() {
   const { queue, notifyQueue, notifyQueueRequestBody, queueAlert, setQueueAlert } = useQueue();
@@ -68,17 +68,29 @@ export default function Home() {
     refetchConfigs();
   }, [queue]);
 
-  effect(() => {
+  useEffect(() => {
+    const limitSize = () => {
+      if (window.innerWidth < 768 && queueCardSize.value === "large") {
+        queueCardSize.value = "medium";
+      }
+
+      if (window.innerWidth >= 768 && sessionStorage.getItem("queueCardSize") != (undefined || queueCardSize.value)) {
+        queueCardSize.value = sessionStorage.getItem("queueCardSize") as TQueueCardSize;
+      }
+    };
+
     const handleResize = () => {
       windowWidth.value = window.innerWidth;
+      limitSize();
     };
 
     window.addEventListener("resize", handleResize);
+    limitSize();
 
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  });
+  }, [window.innerWidth]);
 
   function SwipeableCard({ clientData, onRemove }: { clientData: InQueueItem; onRemove: Function }) {
     const cardRef = useRef<HTMLDivElement | null>(null);
@@ -108,8 +120,10 @@ export default function Home() {
         },
 
         onDrag: ({ movement: [dx], last }) => {
-          const isToRemoveLeft = dx < -window.innerWidth / 4;
-          const isToRemoveRight = dx > window.innerWidth / 4;
+          const cardWidth = cardRef.current?.clientWidth || window.innerWidth;
+          const isToRemoveDivider = queueCardSize.value === "small" ? 1.5 : 4;
+          const isToRemoveLeft = dx < -cardWidth / isToRemoveDivider;
+          const isToRemoveRight = dx > cardWidth / isToRemoveDivider;
 
           if (cardRef.current) {
             const redBackground = cardRef.current.parentElement;
@@ -127,7 +141,7 @@ export default function Home() {
               if (isToRemoveLeft || isToRemoveRight) {
                 onRemove(transformedData.id, 6, transformedData.currentDestinationId, 6);
                 if (redBackground) redBackground.style.opacity = "0";
-                cardRef.current.style.left = isToRemoveLeft ? `-${window.innerWidth}px` : `${window.innerWidth}px`;
+                cardRef.current.style.left = isToRemoveLeft ? `-${windowWidth.value}px` : `${windowWidth.value}px`;
               } else {
                 cardRef.current.style.transition = ".3s";
                 cardRef.current.style.transform = `translateX(${0}px)`;
@@ -147,7 +161,7 @@ export default function Home() {
     );
 
     return (
-      <div className="queueHiddenTrashContainer">
+      <div className={`queueHiddenTrashContainer ${queueCardSize.value}`}>
         <DeleteForeverIcon className="queueHiddenTrash" />
         <div
           ref={cardRef}
@@ -165,7 +179,7 @@ export default function Home() {
 
   function SwipeableList({ queue, onRemove }: { queue: InQueueItem[]; onRemove: Function }) {
     return (
-      <div className="queueContainer">
+      <div className={`queueContainer ${queueCardSize.value}`}>
         <QueueOrdinations />
         {queue?.map((clientData) => (
           <SwipeableCard key={clientData.id} clientData={clientData} onRemove={onRemove} />
@@ -201,7 +215,7 @@ export default function Home() {
 
   return (
     <>
-      <Main open={sideDrawerOpen.value && windowWidth.value >= 768}>
+      <Main open={sideDrawerOpen.value && windowWidth.value > 900}>
         <TopBar />
 
         <SwipeableList queue={filteredQueue} onRemove={handleRemoveDeviceOfQueue} />

@@ -5,7 +5,8 @@ import { useCompany } from "../../contexts/CompanyContext";
 import { useTranslation } from "react-i18next";
 import { ClickAwayListener } from "@mui/base/ClickAwayListener";
 import { useGesture } from "@use-gesture/react";
-import { sideDrawerOpen } from "../../store/signalsStore";
+import { queueCardSize, sideDrawerOpen } from "../../store/signalsStore";
+import { TQueueCardSize } from "../../store/types";
 import keycloak from "../../services/keycloak/keycloak";
 import AddIcon from "@mui/icons-material/Add";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -90,6 +91,18 @@ export default function TopBar() {
     }
   }
 
+  function handleEyeClick() {
+    const options = ["large", "medium", "small"];
+    const currentIndex = options.indexOf(queueCardSize.value);
+
+    if (currentIndex !== -1) {
+      const nextIndex = (currentIndex + 1) % options.length;
+      const nextOption = options[nextIndex] as TQueueCardSize;
+      queueCardSize.value = nextOption;
+      sessionStorage.setItem("queueCardSize", nextOption);
+    }
+  }
+
   return (
     <>
       <div className="smallScreenMainLogoContainer">
@@ -99,11 +112,11 @@ export default function TopBar() {
       <div className="topBarContainer">
         <div className="buttonsContainer">
           <ClickAwayListener onClickAway={() => setDevicesOpen(false)}>
-            <IconButton className="roundedPrimaryIconButton" {...bindAddIcon()}>
+            <IconButton className="addDeviceButton" {...bindAddIcon()}>
               <AddIcon />
             </IconButton>
           </ClickAwayListener>
-          {/* <IconButton className="roundedPrimaryIconButton">
+          {/* <IconButton className="addDeviceButton">
             <QrCodeIcon />
           </IconButton> */}
 
@@ -141,13 +154,13 @@ export default function TopBar() {
         <img onClick={logout} src={hanamiLogo} className="mainLogo" style={{ display: sideDrawerOpen.value ? "none" : "block" }} />
 
         <div className="buttonsContainer">
-          <IconButton className="roundedSecondaryIconButton">
-            <VisibilityIcon />
-          </IconButton>
+          <IconButton className="roundedSecondaryIconButton defaultCursor">{queue?.length}</IconButton>
 
           <Filters />
 
-          <IconButton className="roundedSecondaryIconButton defaultCursor">{queue?.length}</IconButton>
+          <IconButton className="roundedSecondaryIconButton" onClick={handleEyeClick}>
+            <VisibilityIcon />
+          </IconButton>
         </div>
       </div>
     </>

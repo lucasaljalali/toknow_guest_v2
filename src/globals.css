@@ -98,15 +98,15 @@ a {
   width: 8rem;
 }
 
-.MuiIconButton-root:is(.roundedPrimaryIconButton) {
-  width: 4rem;
-  height: 4rem;
+.MuiIconButton-root:is(.addDeviceButton) {
+  width: 4.5rem;
+  height: 4.5rem;
   background: var(--primary-color-main);
   color: var(--text-color-unique-dark);
   box-shadow: var(--shadow-raised);
 }
 
-.MuiIconButton-root:is(.roundedPrimaryIconButton):hover {
+.MuiIconButton-root:is(.addDeviceButton):hover {
   background: var(--primary-color-dark);
 }
 
@@ -131,14 +131,15 @@ a {
   overflow: hidden;
 }
 
-.MuiIconButton-root:is(.roundedPrimaryIconButton) svg, .MuiIconButton-root:is(.roundedSecondaryIconButton) svg, .MuiTypography-root:is(.partySizeTag) {
+.MuiIconButton-root:is(.addDeviceButton) svg, .MuiIconButton-root:is(.roundedSecondaryIconButton) svg, .MuiTypography-root:is(.partySizeTag) {
   font-size: 2rem;
 }
 
 .queueContainer {
   display: flex;
-  flex-direction: column;
-  gap: .75rem;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: .85rem;
   padding: 0 .1rem 2rem .1rem;
   overflow-y: auto;
   overflow-x: hidden;
@@ -150,10 +151,18 @@ a {
   display: none;
 }
 
+.queueContainer:is(.small) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+  gap: 1.5rem;
+  padding: .25rem 0;
+}
+
 .queueOrdinationContainer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
 }
 
 .MuiTypography-root:is(.queueOrdinationOption) {
@@ -178,16 +187,29 @@ a {
   transition: .5s;
 }
 
-.queueHiddenTrashContainer:last-child {
-  margin-bottom: 4rem;
-}
-
 .queueHiddenTrashContainer .MuiSvgIcon-root:is(.queueHiddenTrash) {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   font-size: 1.5rem;
   transition: font-size .3s;
+}
+
+.queueHiddenTrashContainer:is(.large) {
+  width: 100%;
+}
+
+.queueHiddenTrashContainer:is(.large):last-child {
+  margin-bottom: 4rem;
+}
+
+.queueHiddenTrashContainer:is(.medium) {
+  width: 48%;
+}
+
+.queueHiddenTrashContainer:is(.small) {
+  aspect-ratio: 1/1;
+  transition: none;
 }
 
 .allCardsTypesContainer {
@@ -197,8 +219,8 @@ a {
   touch-action: pan-y;
 }
 
-.queueLongCardContainer {
-  height: 6rem;
+.queueCard {
+  height: 7rem;
   width: 100%;
   display: flex;
   align-items: center;
@@ -207,28 +229,48 @@ a {
   border-radius: var(--border-radius);
 }
 
+.queueHiddenTrashContainer:is(.small) .queueCard {
+  height: auto;
+}
+
 .queueCardItem {
   max-height: 100%;
   padding: .25rem;
 }
 
-.queueCardItem:is(.MuiButtonBase-root) {
+.queueCardItem .MuiButtonBase-root {
   width: fit-content;
+  padding: 0.15rem;
 }
 
-.queueCardItem, .queueOrdinationContainer p {
+.queueCardItem, .queueOrdinationContainer:is(.large) p {
   display: flex;
   flex: 1;
   text-align: left;
 }
 
-.queueCardItem:first-child, .queueCardItem:last-child, .queueOrdinationContainer p:first-child, .queueOrdinationContainer p:last-child {
+.queueCardItem .MuiTypography-root {
+  overflow: hidden;
+}
+
+.queueHiddenTrashContainer:is(.large) .queueCardItem:first-child,
+.queueHiddenTrashContainer:is(.large) .queueCardItem:last-child,
+.queueOrdinationContainer:is(.large) p:first-child,
+.queueOrdinationContainer:is(.large) p:last-child {
   flex: .75;
   justify-content: center;
 }
 
-.queueCardItem .MuiTypography-root {
-  overflow: hidden;
+.queueOrdinationContainer:is(.medium) {
+  padding: 0 8% 0 5%;
+}
+
+.queueHiddenTrashContainer:is(.medium) .queueCardItem {
+  justify-content: center;
+}
+
+.queueOrdinationContainer:is(.small) {
+  display: none;
 }
 
 .arrayToStringLines {
@@ -238,11 +280,11 @@ a {
 
 .deviceIcon {
   background: var(--gradient-device);
-  width: 5.5rem;
-  height: 5.5rem;
+  width: 6.25rem;
+  height: 6.25rem;
   box-shadow: var(--shadow-complex);
   border: 2px double rgba(0, 0, 0, 0.5);
-  border-radius: 25px;
+  border-radius: inherit;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -283,9 +325,37 @@ a {
   font-size: 2.5rem;
 }
 
+.queueHiddenTrashContainer:is(.small) .deviceIcon,
+.queueHiddenTrashContainer:is(.small) button,
+.queueHiddenTrashContainer:is(.small) .queueCardItem,
+.queueHiddenTrashContainer:is(.small) .queueCard,
+.queueHiddenTrashContainer:is(.small) .allCardsTypesContainer {
+  width: 100%;
+  height: 100%;
+}
+
+.queueHiddenTrashContainer:is(.small),
+.queueHiddenTrashContainer:is(.small) button,
+.queueHiddenTrashContainer:is(.small) .queueCardItem,
+.queueHiddenTrashContainer:is(.small) .queueCard {
+  padding: 0;
+  border-radius: 35px;
+}
+
+.queueHiddenTrashContainer:is(.small) .deviceIcon h1 {
+  width: 75%;
+  height: 75%;
+  font-size: 3rem;
+  font-weight: 300;
+}
+
+.queueHiddenTrashContainer:is(.small) .deviceIcon h1 span {
+  font-size: .85rem;
+}
+
 .topBarDevicesOptionsContainer {
   position: absolute;
-  height: 5.5rem;
+  height: 7rem;
   width: auto;
   max-width: calc(100vw - 8rem);
   top: 50%;
@@ -322,6 +392,7 @@ a {
 
 .topBarDevicesOptionsContainer button {
   min-width: fit-content;
+  padding: 0.25rem;
 }
 
 .topBarAddDeviceButton {
@@ -331,8 +402,8 @@ a {
 }
 
 .topBarAddDeviceButton .deviceIcon {
-  width: 4.5rem;
-  height: 4.5rem;
+  width: 6rem;
+  height: 6rem;
 }
 
 #rightDrawer .MuiPaper-root {
@@ -472,6 +543,10 @@ a {
   .smallScreenMainLogo {
     height: 1.25rem;
     width: auto;
+  }
+
+  .queueHiddenTrashContainer:is(.medium) {
+    width: 100%;
   }
   
 }
