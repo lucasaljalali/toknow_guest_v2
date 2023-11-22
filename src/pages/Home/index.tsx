@@ -5,14 +5,8 @@ import { useQueue } from "../../contexts/QueueContext";
 import { useCompany } from "../../contexts/CompanyContext";
 import { InQueueItem } from "../../services/api/dtos/Queue";
 import { ITransformedInQueueData, transformInQueueData } from "./utils/transformInQueueData";
-import {
-  filtersOpen,
-  filtersSelection,
-  persistentQueueCardSize,
-  queueCardSize,
-  sideDrawerOpen,
-  windowWidth,
-} from "../../store/signalsStore";
+import { filtersOpen, filtersSelection, queueCardSize, sideDrawerOpen, windowWidth } from "../../store/signalsStore";
+import { TQueueCardSize } from "../../store/types";
 import QueueCard from "../../components/QueueCard/QueueCard";
 import TopBar from "../../components/TopBar/TopBar";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
@@ -80,8 +74,9 @@ export default function Home() {
         queueCardSize.value = "medium";
       }
 
-      if (window.innerWidth >= 768 && persistentQueueCardSize) {
-        if (persistentQueueCardSize !== queueCardSize.value) queueCardSize.value = persistentQueueCardSize;
+      if (window.innerWidth >= 768 && (sessionStorage.getItem("queueCardSize") as TQueueCardSize)) {
+        if ((sessionStorage.getItem("queueCardSize") as TQueueCardSize) !== queueCardSize.value)
+          queueCardSize.value = sessionStorage.getItem("queueCardSize") as TQueueCardSize;
       }
     };
 

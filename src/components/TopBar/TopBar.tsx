@@ -5,7 +5,7 @@ import { useCompany } from "../../contexts/CompanyContext";
 import { useTranslation } from "react-i18next";
 import { ClickAwayListener } from "@mui/base/ClickAwayListener";
 import { useGesture } from "@use-gesture/react";
-import { queueCardSize, sideDrawerOpen } from "../../store/signalsStore";
+import { queueCardSize, sideDrawerOpen, windowWidth } from "../../store/signalsStore";
 import { TQueueCardSize } from "../../store/types";
 import keycloak from "../../services/keycloak/keycloak";
 import AddIcon from "@mui/icons-material/Add";
@@ -92,7 +92,7 @@ export default function TopBar() {
   }
 
   function handleEyeClick() {
-    const options = ["large", "medium", "small"];
+    const options = windowWidth.value < 768 ? ["medium", "small"] : ["large", "medium", "small"];
     const currentIndex = options.indexOf(queueCardSize.value);
 
     if (currentIndex !== -1) {

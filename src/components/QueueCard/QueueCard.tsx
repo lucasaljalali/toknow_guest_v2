@@ -58,7 +58,7 @@ export default function QueueCard({ data }: IQueueLongCard) {
       notifyQueue();
     }
   }
-  //TODO: the card size options getting the state from queueCardSize.value
+
   return (
     <div className={`queueCard`}>
       {queueCardSize.value !== "small" && (
