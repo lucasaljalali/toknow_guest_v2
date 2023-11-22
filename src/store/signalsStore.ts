@@ -13,6 +13,6 @@ export const filtersSelection = signal(persistentFiltersSelection ? JSON.parse(p
 
 export const filterBadgeValue = signal(0);
 
-const persistentQueueCardSize = sessionStorage.getItem("queueCardSize") as TQueueCardSize;
+export const persistentQueueCardSize = sessionStorage.getItem("queueCardSize") as TQueueCardSize;
 
 export const queueCardSize = signal<TQueueCardSize>(persistentQueueCardSize ? persistentQueueCardSize : "large");
