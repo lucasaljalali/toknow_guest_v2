@@ -53,7 +53,7 @@ export default function Filters() {
           <FilterAltIcon />
         </IconButton>
 
-        {filterBadgeValue.value > 0 && <Badge id={"filterBadge"} badgeContent={String(filterBadgeValue.value)}></Badge>}
+        {filterBadgeValue.value > 0 && <Badge id={"filterBadge"} badgeContent={String(filterBadgeValue.value)} />}
 
         <div id="filterDropdown" className={filtersOpen.value === true ? "open glass" : "glass"}>
           {filtersOptions.map((filter) => {

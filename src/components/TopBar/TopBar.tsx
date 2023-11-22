@@ -92,6 +92,10 @@ export default function TopBar() {
 
   return (
     <>
+      <div className="smallScreenMainLogoContainer">
+        <img onClick={logout} src={hanamiLogo} className="smallScreenMainLogo" />
+      </div>
+
       <div className="topBarContainer">
         <div className="buttonsContainer">
           <ClickAwayListener onClickAway={() => setDevicesOpen(false)}>

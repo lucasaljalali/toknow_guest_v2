@@ -5,15 +5,15 @@ import { useQueue } from "../../contexts/QueueContext";
 import { useCompany } from "../../contexts/CompanyContext";
 import { InQueueItem } from "../../services/api/dtos/Queue";
 import { ITransformedInQueueData, transformInQueueData } from "./utils/transformInQueueData";
-import { filtersOpen, filtersSelection, sideDrawerOpen } from "../../store/signalsStore";
+import { filtersOpen, filtersSelection, sideDrawerOpen, windowWidth } from "../../store/signalsStore";
 import QueueCard from "../../components/QueueCard/QueueCard";
 import TopBar from "../../components/TopBar/TopBar";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import RightDrawer from "../../components/RightDrawer/RightDrawer";
 import QueueOrdinations from "../../components/Ordinations/QueueOrdinations";
+import { effect } from "@preact/signals-react";
 
 export default function Home() {
-  // const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
   const { queue, notifyQueue, notifyQueueRequestBody, queueAlert, setQueueAlert } = useQueue();
   const { refetchConfigs, companyConfigs } = useCompany();
 
@@ -67,6 +67,18 @@ export default function Home() {
   useEffect(() => {
     refetchConfigs();
   }, [queue]);
+
+  effect(() => {
+    const handleResize = () => {
+      windowWidth.value = window.innerWidth;
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  });
 
   function SwipeableCard({ clientData, onRemove }: { clientData: InQueueItem; onRemove: Function }) {
     const cardRef = useRef<HTMLDivElement | null>(null);
@@ -189,7 +201,7 @@ export default function Home() {
 
   return (
     <>
-      <Main open={sideDrawerOpen.value}>
+      <Main open={sideDrawerOpen.value && windowWidth.value >= 768}>
         <TopBar />
 
         <SwipeableList queue={filteredQueue} onRemove={handleRemoveDeviceOfQueue} />

@@ -136,7 +136,6 @@ export default function RightDrawer({ cardData }: IRightDrawer) {
     <ClickAwayListener onClickAway={() => (sideDrawerOpen.value = false)}>
       <SwipeableDrawer
         id="rightDrawer"
-        variant="persistent"
         anchor="right"
         open={sideDrawerOpen.value}
         onClose={() => (sideDrawerOpen.value = false)}

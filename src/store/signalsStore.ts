@@ -1,5 +1,7 @@
 import { signal } from "@preact/signals-react";
 
+export const windowWidth = signal(window.innerWidth);
+
 export const sideDrawerOpen = signal(false);
 
 export const filtersOpen = signal(false);

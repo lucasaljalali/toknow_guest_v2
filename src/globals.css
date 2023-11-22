@@ -87,11 +87,15 @@ a {
   gap: 2rem;
 }
 
+.smallScreenMainLogoContainer {
+  display: none;
+}
+
 .mainLogo {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: 10rem;
+  width: 8rem;
 }
 
 .MuiIconButton-root:is(.roundedPrimaryIconButton) {
@@ -169,7 +173,7 @@ a {
 
 .queueHiddenTrashContainer {
   position: relative;
-  background: red;
+  background: #6B0000;
   border-radius: calc(var(--border-radius) + 2px);
   transition: .5s;
 }
@@ -432,5 +436,42 @@ a {
 
 #filterBadge span {
   background: var(--primary-color-dark);
-  transform: translate(100%, -100%);
+  color: var(--text-color);
+  transform: translate(75%, -75%);
+  font-size: 1rem;
+  padding: 0;
+  border-radius: 50%;
+  height: 1.75rem;
+  width: 1.75rem;
+}
+
+
+
+@media screen and (max-width: 767px) {
+
+  main {
+    padding-top: 0 !important;
+  }
+
+  .mainLogo {
+    display: none !important;
+  }
+  
+  .smallScreenMainLogoContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(100% + 48px); /* workaround: 48px is because of the main tag horizontal padding (24px + 24px)*/
+    transform: translateX(-24px); /* workaround: to centralize, because of the previous comment*/
+    padding: .25rem;
+    margin-bottom: .5rem;
+    background: var(--background-color-terciary);
+    box-shadow: var(--shadow-light);
+  }
+
+  .smallScreenMainLogo {
+    height: 1.25rem;
+    width: auto;
+  }
+  
 }
