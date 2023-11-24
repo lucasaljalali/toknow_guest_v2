@@ -78,7 +78,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   z-index: 10;
 }
 
@@ -136,12 +136,7 @@ a {
 }
 
 .queueContainer {
-  height: 82vh;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: .85rem;
-  padding: 0 .1rem 2rem .1rem;
+  height: 85vh;
   overflow-y: auto;
   overflow-x: hidden;
   -ms-overflow-style: none;  
@@ -152,11 +147,25 @@ a {
   display: none;
 }
 
-.queueContainer:is(.small) {
+.queueList {
+  display: flex;
+  gap: .85rem;
+  padding: .5rem .1rem 7rem .1rem;
+}
+
+.queueList:is(.large) {
+  flex-direction: column;
+}
+
+.queueList:is(.medium) {
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.queueList:is(.small) {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
   gap: 1.5rem;
-  padding: .25rem;
 }
 
 .queueOrdinationContainer {
@@ -164,6 +173,7 @@ a {
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  margin-bottom: .5rem;
 }
 
 .MuiTypography-root:is(.queueOrdinationOption) {
@@ -198,10 +208,6 @@ a {
 
 .queueHiddenTrashContainer:is(.large) {
   width: 100%;
-}
-
-.queueHiddenTrashContainer:is(.large):last-child {
-  margin-bottom: 4rem;
 }
 
 .queueHiddenTrashContainer:is(.medium) {

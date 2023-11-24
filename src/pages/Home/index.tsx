@@ -180,11 +180,12 @@ export default function Home() {
 
   function SwipeableList({ queue, onRemove }: { queue: InQueueItem[]; onRemove: Function }) {
     return (
-      <div className={`queueContainer ${queueCardSize.value}`}>
-        <QueueOrdinations />
-        {queue?.map((clientData) => (
-          <SwipeableCard key={clientData.id} clientData={clientData} onRemove={onRemove} />
-        ))}
+      <div className={`queueContainer`}>
+        <div className={`queueList ${queueCardSize.value}`}>
+          {queue?.map((clientData) => (
+            <SwipeableCard key={clientData.id} clientData={clientData} onRemove={onRemove} />
+          ))}
+        </div>
       </div>
     );
   }
@@ -218,6 +219,8 @@ export default function Home() {
     <>
       <Main open={sideDrawerOpen.value && windowWidth.value > 900}>
         <TopBar />
+
+        <QueueOrdinations />
 
         <SwipeableList queue={filteredQueue} onRemove={handleRemoveDeviceOfQueue} />
 
