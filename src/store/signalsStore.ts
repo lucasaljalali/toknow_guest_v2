@@ -16,3 +16,5 @@ export const filterBadgeValue = signal(0);
 export const persistentQueueCardSize = sessionStorage.getItem("queueCardSize") as TQueueCardSize;
 
 export const queueCardSize = signal<TQueueCardSize>(persistentQueueCardSize ? persistentQueueCardSize : "large");
+
+export const notificationDrawerOpen = signal(false);

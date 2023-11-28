@@ -11,7 +11,9 @@ import keycloak from "../../services/keycloak/keycloak";
 import AddIcon from "@mui/icons-material/Add";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 // import QrCodeIcon from "@mui/icons-material/QrCode";
-import hanamiLogo from "../../assets/images/hanami.png";
+// import hanamiLogo from "../../assets/images/hanami.png";
+import continenteLogo from "../../assets/images/continente.png";
+// import auchanLogo from "../../assets/images/auchan.png"
 import DeviceIcon from "../DeviceIcon/DeviceIcon";
 import Filters from "../Filters/Filters";
 
@@ -106,7 +108,7 @@ export default function TopBar() {
   return (
     <>
       <div className="smallScreenMainLogoContainer">
-        <img onClick={logout} src={hanamiLogo} className="smallScreenMainLogo" />
+        <img onClick={logout} src={continenteLogo} className="smallScreenMainLogo" />
       </div>
 
       <div className="topBarContainer">
@@ -151,7 +153,7 @@ export default function TopBar() {
           </div>
         </div>
 
-        <img onClick={logout} src={hanamiLogo} className="mainLogo" style={{ display: sideDrawerOpen.value ? "none" : "block" }} />
+        <img onClick={logout} src={continenteLogo} className="mainLogo" style={{ display: sideDrawerOpen.value ? "none" : "block" }} />
 
         <div className="buttonsContainer">
           <IconButton className="roundedSecondaryIconButton defaultCursor">{queue?.length}</IconButton>

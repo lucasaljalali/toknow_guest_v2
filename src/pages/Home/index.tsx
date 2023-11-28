@@ -5,13 +5,21 @@ import { useQueue } from "../../contexts/QueueContext";
 import { useCompany } from "../../contexts/CompanyContext";
 import { InQueueItem } from "../../services/api/dtos/Queue";
 import { ITransformedInQueueData, transformInQueueData } from "./utils/transformInQueueData";
-import { filtersOpen, filtersSelection, queueCardSize, sideDrawerOpen, windowWidth } from "../../store/signalsStore";
+import {
+  filtersOpen,
+  filtersSelection,
+  notificationDrawerOpen,
+  queueCardSize,
+  sideDrawerOpen,
+  windowWidth,
+} from "../../store/signalsStore";
 import { TQueueCardSize } from "../../store/types";
 import QueueCard from "../../components/QueueCard/QueueCard";
 import TopBar from "../../components/TopBar/TopBar";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import RightDrawer from "../../components/RightDrawer/RightDrawer";
 import QueueOrdinations from "../../components/Ordinations/QueueOrdinations";
+import NotificationDrawer from "../../components/NotificationDrawer/NotificationDrawer";
 
 export default function Home() {
   const { queue, notifyQueue, notifyQueueRequestBody, queueAlert, setQueueAlert } = useQueue();
@@ -39,7 +47,7 @@ export default function Home() {
 
   const cardData = useRef<ITransformedInQueueData | null>(null);
 
-  const drawerWidth = document?.getElementById("rightDrawer")?.querySelector(".MuiPaper-root")?.clientWidth;
+  const drawerWidth = document?.querySelector(".rightDrawer")?.querySelector(".MuiPaper-root")?.clientWidth;
 
   const doubleTouchThreshold = 300;
   let firstTouchTimestamp = 0;
@@ -100,6 +108,19 @@ export default function Home() {
 
     const bind = useGesture(
       {
+        onMouseDown: () => (cardData.current = transformedData),
+        onTouchStart: () => (cardData.current = transformedData),
+        onClick: ({ event }) => {
+          event.preventDefault();
+          event.stopPropagation();
+
+          if (filtersOpen.value === true) {
+            filtersOpen.value = false;
+          }
+          if (event.detail === 2) {
+            sideDrawerOpen.value = !sideDrawerOpen.value;
+          }
+        },
         onTouchEnd: ({ event }) => {
           event.preventDefault();
           event.stopPropagation();
@@ -110,7 +131,7 @@ export default function Home() {
 
             if (timeDifference <= doubleTouchThreshold) {
               // This is a double touch
-              handleCardDoubleClick(event, transformedData);
+              sideDrawerOpen.value = !sideDrawerOpen.value;
               // Reset the timestamp
               firstTouchTimestamp = 0;
               return;
@@ -170,7 +191,6 @@ export default function Home() {
           className="allCardsTypesContainer"
           style={{ touchAction: "pan-y" }}
           {...bind()}
-          onClick={(e) => handleCardClick(e, transformedData)}
         >
           <QueueCard key={transformedData.id} data={transformedData} />
         </div>
@@ -197,27 +217,9 @@ export default function Home() {
     }
   }
 
-  function handleCardClick(event: any, data: ITransformedInQueueData) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (filtersOpen.value === true) {
-      filtersOpen.value = false;
-    }
-    if (event.detail === 2) {
-      handleCardDoubleClick(event, data);
-    }
-  }
-
-  function handleCardDoubleClick(event: any, data: ITransformedInQueueData) {
-    event.preventDefault();
-    event.stopPropagation();
-    cardData.current = data;
-    sideDrawerOpen.value = !sideDrawerOpen.value;
-  }
-
   return (
     <>
-      <Main open={sideDrawerOpen.value && windowWidth.value > 900}>
+      <Main open={(sideDrawerOpen.value || notificationDrawerOpen.value) && windowWidth.value > 900}>
         <TopBar />
 
         <QueueOrdinations />
@@ -232,6 +234,8 @@ export default function Home() {
       </Main>
 
       <RightDrawer cardData={cardData} />
+
+      <NotificationDrawer cardData={cardData} />
     </>
   );
 }

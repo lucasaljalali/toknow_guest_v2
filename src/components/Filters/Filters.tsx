@@ -65,10 +65,11 @@ export default function Filters() {
                 <InputLabel id={filter.label}>{t(filter.label)}</InputLabel>
                 <Select
                   multiple
-                  labelId={filter.label}
+                  id={filter.queueValueKey}
                   name={filter.queueValueKey}
-                  value={filtersSelection.value[filter.queueValueKey as keyof object] || []}
+                  labelId={filter.label}
                   label={t(filter.label)}
+                  value={filtersSelection.value[filter.queueValueKey as keyof object] || []}
                   onChange={handleChange}
                 >
                   {uniqueOptions?.map((option, index) => (

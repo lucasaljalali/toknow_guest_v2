@@ -27,6 +27,10 @@
     "FORM_LABEL_SAVE": "Salvar",
     "FORM_LABEL_ARRIVED_AT": "CHEGOU ÀS",
     "FORM_LABEL_VERIFIED": "Verificado",
+    "FORM_LABEL_SEND_MESSAGE": "Enviar Mensagem",
+    "FORM_LABEL_MESSAGE": "Mensagem",
+    "FORM_LABEL_SEND": "Enviar",
+    "FORM_HELPER_MAX_LENGTH": "Comprimento máx.",
 
     "+351 FORM_LABEL_PORTUGAL": "+351 Portugal",
     "+44 FORM_LABEL_UNITED_KINGDOM": "+44 Reino Unido",

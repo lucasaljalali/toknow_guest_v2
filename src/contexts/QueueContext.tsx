@@ -29,6 +29,7 @@ interface INotifyQueueRequestBody {
   actionId?: number;
   destinationId?: number;
   messageId?: number;
+  message?: string;
 }
 interface QueueContextData {
   queue: InQueueItem[];

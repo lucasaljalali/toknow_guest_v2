@@ -1,14 +1,4 @@
-import {
-  Autocomplete,
-  Box,
-  Button,
-  ClickAwayListener,
-  FormControlLabel,
-  SwipeableDrawer,
-  Switch,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Autocomplete, Box, Button, ClickAwayListener, Drawer, FormControlLabel, Switch, TextField, Typography } from "@mui/material";
 import { Key, MutableRefObject, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { phonePrefixs } from "../../configuration/phonePrefixs";
@@ -16,7 +6,7 @@ import { useCompany } from "../../contexts/CompanyContext";
 import { useQueue } from "../../contexts/QueueContext";
 import { ITransformedInQueueData } from "../../pages/Home/utils/transformInQueueData";
 import { axiosInstance } from "../../services/api/baseConfigs";
-import { sideDrawerOpen } from "../../store/signalsStore";
+import { notificationDrawerOpen, sideDrawerOpen } from "../../store/signalsStore";
 import { effect } from "@preact/signals-react";
 
 interface IRightDrawer {
@@ -55,9 +45,11 @@ export default function RightDrawer({ cardData }: IRightDrawer) {
       setCountdown(0);
       setCodeId(null);
       setIsCodeVerified(null);
-      cardData.current = null;
+
       addQueueRequestBody.current = null;
       document.querySelectorAll(".queueCard")?.forEach((card) => card.classList.remove("active"));
+
+      if (notificationDrawerOpen.value === false) cardData.current = null;
     }
     if (sideDrawerOpen.value === true && cardData.current?.id) {
       const clickedCard = document.getElementById(`${cardData.current.id}`)?.querySelector(".queueCard");
@@ -134,12 +126,12 @@ export default function RightDrawer({ cardData }: IRightDrawer) {
 
   return (
     <ClickAwayListener onClickAway={() => (sideDrawerOpen.value = false)}>
-      <SwipeableDrawer
-        id="rightDrawer"
+      <Drawer
+        className="rightDrawer"
         anchor="right"
+        variant="persistent"
         open={sideDrawerOpen.value}
         onClose={() => (sideDrawerOpen.value = false)}
-        onOpen={() => (sideDrawerOpen.value = true)}
       >
         <Typography variant="h6" className="drawerTitle">
           {isEditQueue
@@ -339,7 +331,7 @@ export default function RightDrawer({ cardData }: IRightDrawer) {
             {isEditQueue ? t("FORM_LABEL_SAVE") : t("FORM_LABEL_ADD")}
           </Button>
         </Box>
-      </SwipeableDrawer>
+      </Drawer>
     </ClickAwayListener>
   );
 }

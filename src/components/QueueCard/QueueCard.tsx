@@ -3,7 +3,7 @@ import { ITransformedInQueueData } from "../../pages/Home/utils/transformInQueue
 import { Button, Typography } from "@mui/material";
 import { useQueue } from "../../contexts/QueueContext";
 import { InQueueItem } from "../../services/api/dtos/Queue";
-import { queueCardSize } from "../../store/signalsStore";
+import { notificationDrawerOpen, queueCardSize } from "../../store/signalsStore";
 import DeviceIcon from "../DeviceIcon/DeviceIcon";
 
 interface IQueueLongCard {
@@ -13,11 +13,37 @@ interface IQueueLongCard {
 export default function QueueCard({ data }: IQueueLongCard) {
   const { notifyQueue, notifyQueueRequestBody } = useQueue();
   const doubleTouchThreshold = 300;
+  const longPressThreshold = 2000;
   let firstTouchTimestamp = 0;
+  let pressTimer: number | null = null;
+
+  function handleDeviceMouseDown(event: MouseEvent | TouchEvent) {
+    if (event.type === "mousedown" || event.type === "touchstart") {
+      pressTimer = setTimeout(() => {
+        notificationDrawerOpen.value = !notificationDrawerOpen.value;
+        pressTimer = null;
+      }, longPressThreshold);
+    }
+  }
+
+  function handleDeviceMouseUp(event: MouseEvent | TouchEvent) {
+    if (event.type === "mouseup" || event.type === "touchend") {
+      if (pressTimer) {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+      }
+    }
+  }
 
   function handleDeviceClick(event: MouseEvent | TouchEvent, data: InQueueItem) {
-    event.stopPropagation();
     event.preventDefault();
+
+    if (event.type === "mouseup" || event.type === "touchend") {
+      if (pressTimer) {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+      }
+    }
 
     if (firstTouchTimestamp === 0) {
       firstTouchTimestamp = event.timeStamp;
@@ -26,12 +52,13 @@ export default function QueueCard({ data }: IQueueLongCard) {
 
       if (timeDifference <= doubleTouchThreshold) {
         // This is a double touch
+        event.stopPropagation();
         const clickedDevice = event.currentTarget?.querySelector(".deviceIcon");
         clickedDevice?.classList.add("active");
         setTimeout(() => {
           clickedDevice?.classList.remove("active");
         }, 2000);
-        handleNotifyDevice(data?.id, 2, data?.currentDestinationId, 2);
+        handleNotifyDevice(data?.id, 2, data?.currentDestinationId, 1);
 
         // Reset the timestamp
         firstTouchTimestamp = 0;
@@ -48,7 +75,7 @@ export default function QueueCard({ data }: IQueueLongCard) {
       setTimeout(() => {
         clickedDevice?.classList.remove("active");
       }, 2000);
-      handleNotifyDevice(data?.id, 2, data?.currentDestinationId, 2);
+      handleNotifyDevice(data?.id, 2, data?.currentDestinationId, 1);
     }
   }
 
@@ -93,7 +120,13 @@ export default function QueueCard({ data }: IQueueLongCard) {
         </div>
       )}
       <div className="queueCardItem">
-        <Button onClick={(e) => handleDeviceClick(e, data)} onTouchEnd={(e) => handleDeviceClick(e, data)}>
+        <Button
+          onClick={(e) => handleDeviceClick(e, data)}
+          onTouchStart={handleDeviceMouseDown}
+          onTouchEnd={(e) => handleDeviceClick(e, data)}
+          onMouseDown={handleDeviceMouseDown}
+          onMouseUp={handleDeviceMouseUp}
+        >
           <DeviceIcon
             time={queueCardSize.value === "small" ? data?.waitingTimeInMinutes : data?.lastNotificationTimeInMinutes}
             useSMS={data?.useSMS}

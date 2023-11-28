@@ -14,3 +14,5 @@ export const filtersOptions = [
   { label: "FILTER_LABEL_PRIORITY", queueValueKey: "prioritiesLabels" },
   { label: "FILTER_LABEL_STATE", queueValueKey: "queueStateLabel" },
 ];
+
+export const messageMaxLength = 50;

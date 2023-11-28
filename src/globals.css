@@ -413,7 +413,7 @@ a {
   height: 6rem;
 }
 
-#rightDrawer .MuiPaper-root {
+.rightDrawer .MuiPaper-root {
   width: 350px;
   overflow-x: hidden;
   border-top-left-radius: var(--border-radius);
@@ -422,7 +422,7 @@ a {
   background: var(--background-color-terciary);
 }
 
-#rightDrawer form {
+.rightDrawer form {
   max-height: 90%;
   display: flex;
   flex-direction: column;
@@ -434,7 +434,7 @@ a {
   scrollbar-width: none;
 }
 
-#rightDrawer form::-webkit-scrollbar {
+.rightDrawer form::-webkit-scrollbar {
   display: none;
 }
 
@@ -470,6 +470,11 @@ a {
 #formSubmitButton {
   width: 100%;
   height: 3rem;
+}
+
+#sendMessageButton {
+  min-height: 5rem;
+  margin-bottom: 2rem;
 }
 
 .filterContainer {
