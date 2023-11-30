@@ -1,12 +1,12 @@
 import { Box, Button, ClickAwayListener, Drawer, TextField, Typography } from "@mui/material";
 import { MutableRefObject, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useQueue } from "../../contexts/QueueContext";
+import { useQueue } from "../../hooks/useQueue";
 import { notificationDrawerOpen, sideDrawerOpen } from "../../store/signalsStore";
 import { ITransformedInQueueData } from "../../pages/Home/utils/transformInQueueData";
 import { effect } from "@preact/signals-react";
 import { messageMaxLength } from "../../store/constants";
-import { useCompany } from "../../contexts/CompanyContext";
+import { useCompany } from "../../hooks/CompanyContext";
 
 interface INotificationDrawer {
   cardData: MutableRefObject<ITransformedInQueueData | null>;
@@ -14,7 +14,7 @@ interface INotificationDrawer {
 
 export default function NotificationDrawer({ cardData }: INotificationDrawer) {
   const [message, setMessage] = useState("");
-  const { notifyQueueRequestBody, notifyQueue } = useQueue();
+  const { notifyQueue } = useQueue();
   const { companyConfigs } = useCompany();
   const { t } = useTranslation();
 
@@ -22,14 +22,13 @@ export default function NotificationDrawer({ cardData }: INotificationDrawer) {
 
   function handleSubmit(messageId?: number | string) {
     if (cardData.current?.id) {
-      notifyQueueRequestBody.current = {
+      const dataToSubmit = {
         id: cardData.current?.id,
         actionId: 2,
         destinationId: cardData.current?.currentDestinationId,
         ...(messageId ? { messageId: Number(messageId) } : { message: message }),
       };
-      notifyQueue();
-      notificationDrawerOpen.value = false;
+      notifyQueue(dataToSubmit);
     }
   }
 

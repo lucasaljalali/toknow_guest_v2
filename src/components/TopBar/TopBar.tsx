@@ -1,7 +1,7 @@
 import { MouseEvent, TouchEvent, useEffect, useRef, useState } from "react";
 import { Button, IconButton, Typography } from "@mui/material";
-import { useQueue } from "../../contexts/QueueContext";
-import { useCompany } from "../../contexts/CompanyContext";
+import { useQueue } from "../../hooks/useQueue";
+import { useCompany } from "../../hooks/CompanyContext";
 import { useTranslation } from "react-i18next";
 import { ClickAwayListener } from "@mui/base/ClickAwayListener";
 import { useGesture } from "@use-gesture/react";
@@ -21,7 +21,7 @@ export default function TopBar() {
   const [devicesOpen, setDevicesOpen] = useState(false);
   const [scrolling, setScrolling] = useState(false);
   const { companyConfigs } = useCompany();
-  const { queue, addQueue, addQueueRequestBody } = useQueue();
+  const { queue, addQueue } = useQueue();
   const { t } = useTranslation();
 
   const pressTimerRef = useRef<number | null>(null);
@@ -71,7 +71,7 @@ export default function TopBar() {
     const deviceToRemoveFromTopBar = document.getElementById(`${deviceId}`);
     if (deviceToRemoveFromTopBar) deviceToRemoveFromTopBar.style.display = "none";
 
-    addQueueRequestBody.current = {
+    const dataToSubmit = {
       clientsId: [1],
       subClientsId: [1],
       destinationId: 1,
@@ -82,7 +82,7 @@ export default function TopBar() {
       useSMS: false,
     };
 
-    addQueue().then(() => (addQueueRequestBody.current = null));
+    addQueue(dataToSubmit);
   }
 
   function handleMouseMove(event: MouseEvent) {

@@ -3,9 +3,9 @@ import { filterBadgeValue, filtersOpen, filtersSelection } from "../../store/sig
 import { ClickAwayListener } from "@mui/base/ClickAwayListener";
 import { filtersOptions } from "../../store/constants";
 import { useTranslation } from "react-i18next";
-import { useQueue } from "../../contexts/QueueContext";
+import { useQueue } from "../../hooks/useQueue";
 import { transformInQueueData } from "../../pages/Home/utils/transformInQueueData";
-import { useCompany } from "../../contexts/CompanyContext";
+import { useCompany } from "../../hooks/CompanyContext";
 import { effect } from "@preact/signals-react";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 

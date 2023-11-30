@@ -1,7 +1,7 @@
 import { MouseEvent, TouchEvent } from "react";
 import { ITransformedInQueueData } from "../../pages/Home/utils/transformInQueueData";
 import { Button, Typography } from "@mui/material";
-import { useQueue } from "../../contexts/QueueContext";
+import { useQueue } from "../../hooks/useQueue";
 import { InQueueItem } from "../../services/api/dtos/Queue";
 import { notificationDrawerOpen, queueCardSize } from "../../store/signalsStore";
 import DeviceIcon from "../DeviceIcon/DeviceIcon";
@@ -11,7 +11,7 @@ interface IQueueLongCard {
 }
 
 export default function QueueCard({ data }: IQueueLongCard) {
-  const { notifyQueue, notifyQueueRequestBody } = useQueue();
+  const { notifyQueue } = useQueue();
   const doubleTouchThreshold = 300;
   const longPressThreshold = 2000;
   let firstTouchTimestamp = 0;
@@ -81,8 +81,8 @@ export default function QueueCard({ data }: IQueueLongCard) {
 
   function handleNotifyDevice(queueId?: string | number, actionId?: number, destinationId?: number, messageId?: number) {
     if (queueId) {
-      notifyQueueRequestBody.current = { id: queueId, actionId: actionId, destinationId: destinationId, messageId: messageId };
-      notifyQueue();
+      const dataToSubmit = { id: queueId, actionId: actionId, destinationId: destinationId, messageId: messageId };
+      notifyQueue(dataToSubmit);
     }
   }
 

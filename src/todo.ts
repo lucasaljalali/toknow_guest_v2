@@ -8,4 +8,6 @@
 
 //TODO: implement zod and formik on forms
 
-//TODO: change all state management to signals
+//TODO: change all state manage
+
+//TODO: implement repager functionality if client still in queue after beeing notified in configurated interval

@@ -44,9 +44,6 @@ export function CompanyProvider({ children }: Props) {
     onSuccess: (data) => {
       setCompanyConfigs(data);
     },
-    onError: (error) => {
-      console.error(error);
-    },
   });
 
   useEffect(() => {

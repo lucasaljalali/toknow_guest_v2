@@ -2,11 +2,11 @@ import { Autocomplete, Box, Button, ClickAwayListener, Drawer, FormControlLabel,
 import { Key, MutableRefObject, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { phonePrefixs } from "../../configuration/phonePrefixs";
-import { useCompany } from "../../contexts/CompanyContext";
-import { useQueue } from "../../contexts/QueueContext";
+import { useCompany } from "../../hooks/CompanyContext";
+import { IQueueRequestBody, useQueue } from "../../hooks/useQueue";
 import { ITransformedInQueueData } from "../../pages/Home/utils/transformInQueueData";
 import { axiosInstance } from "../../services/api/baseConfigs";
-import { notificationDrawerOpen, sideDrawerOpen } from "../../store/signalsStore";
+import { alert, notificationDrawerOpen, sideDrawerOpen } from "../../store/signalsStore";
 import { effect } from "@preact/signals-react";
 
 interface IRightDrawer {
@@ -19,7 +19,7 @@ export default function RightDrawer({ cardData }: IRightDrawer) {
   const [isCodeVerified, setIsCodeVerified] = useState<boolean | null>(null);
   const [countdown, setCountdown] = useState<number>(0);
   const { companyConfigs } = useCompany();
-  const { addQueue, updateQueue, addQueueRequestBody, setQueueAlert } = useQueue();
+  const { addQueue, updateQueue } = useQueue();
   const { t } = useTranslation();
 
   const isEditQueue = cardData?.current?.id != undefined && `${cardData?.current.id}`.length > 0;
@@ -46,7 +46,6 @@ export default function RightDrawer({ cardData }: IRightDrawer) {
       setCodeId(null);
       setIsCodeVerified(null);
 
-      addQueueRequestBody.current = null;
       document.querySelectorAll(".queueCard")?.forEach((card) => card.classList.remove("active"));
 
       if (notificationDrawerOpen.value === false) cardData.current = null;
@@ -67,7 +66,7 @@ export default function RightDrawer({ cardData }: IRightDrawer) {
   }, [countdown]);
 
   function handleSubmit() {
-    const dataToSubmit = {
+    const dataToSubmit: IQueueRequestBody = {
       clientsId: [1],
       subClientsId: [1],
       destinationId: 1,
@@ -83,10 +82,7 @@ export default function RightDrawer({ cardData }: IRightDrawer) {
       id: data?.id,
     };
 
-    addQueueRequestBody.current = dataToSubmit;
-    (isEditQueue ? updateQueue() : addQueue()).then(() => {
-      sideDrawerOpen.value = false;
-    });
+    isEditQueue ? updateQueue(dataToSubmit) : addQueue(dataToSubmit);
   }
 
   async function handleVerifyCode() {
@@ -104,13 +100,16 @@ export default function RightDrawer({ cardData }: IRightDrawer) {
         if (response?.data?.isValid) {
           setIsCodeVerified(true);
           setCountdown(0);
-          return setQueueAlert({ success: t("GLOBAL_SUCCESS_MESSAGE") });
+          alert.value = { success: t("GLOBAL_SUCCESS_MESSAGE") };
+          return;
         }
         setIsCodeVerified(false);
-        return setQueueAlert({ error: t("GLOBAL_ERROR_MESSAGE") });
+        alert.value = { error: t("GLOBAL_ERROR_MESSAGE") };
+        return;
       } catch (error: any) {
         setIsCodeVerified(false);
-        return setQueueAlert({ error: t("GLOBAL_ERROR_MESSAGE") });
+        alert.value = { error: t("GLOBAL_ERROR_MESSAGE") };
+        return;
       }
     }
 
@@ -118,9 +117,11 @@ export default function RightDrawer({ cardData }: IRightDrawer) {
       const response = await axiosInstance.post(`phoneverification/generate`, codeBodyRequest);
       setCodeId(response?.data?.id);
       setCountdown(120);
-      return setQueueAlert({ success: t("GLOBAL_SUCCESS_MESSAGE") });
+      alert.value = { success: t("GLOBAL_SUCCESS_MESSAGE") };
+      return;
     } catch (error: any) {
-      return setQueueAlert({ error: t("GLOBAL_ERROR_MESSAGE") });
+      alert.value = { error: t("GLOBAL_ERROR_MESSAGE") };
+      return;
     }
   }
 

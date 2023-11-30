@@ -1,11 +1,12 @@
 import { useEffect, useRef } from "react";
 import { Alert, AlertColor, Snackbar, styled } from "@mui/material";
 import { useGesture } from "@use-gesture/react";
-import { useQueue } from "../../contexts/QueueContext";
-import { useCompany } from "../../contexts/CompanyContext";
+import { useQueue } from "../../hooks/useQueue";
+import { useCompany } from "../../hooks/CompanyContext";
 import { InQueueItem } from "../../services/api/dtos/Queue";
 import { ITransformedInQueueData, transformInQueueData } from "./utils/transformInQueueData";
 import {
+  alert,
   filtersOpen,
   filtersSelection,
   notificationDrawerOpen,
@@ -20,9 +21,10 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import RightDrawer from "../../components/RightDrawer/RightDrawer";
 import QueueOrdinations from "../../components/Ordinations/QueueOrdinations";
 import NotificationDrawer from "../../components/NotificationDrawer/NotificationDrawer";
+import Loading from "../../components/Loading/Loading";
 
 export default function Home() {
-  const { queue, notifyQueue, notifyQueueRequestBody, queueAlert, setQueueAlert } = useQueue();
+  const { queue, notifyQueue, isLoading } = useQueue();
   const { refetchConfigs, companyConfigs } = useCompany();
 
   const transformedQueue = queue?.map((queueItem) => transformInQueueData(queueItem, companyConfigs));
@@ -212,8 +214,8 @@ export default function Home() {
 
   function handleRemoveDeviceOfQueue(queueId?: string | number, actionId?: number, destinationId?: number, messageId?: number) {
     if (queueId) {
-      notifyQueueRequestBody.current = { id: queueId, actionId: actionId, destinationId: destinationId, messageId: messageId };
-      notifyQueue();
+      const dataToSubmit = { id: queueId, actionId: actionId, destinationId: destinationId, messageId: messageId };
+      notifyQueue(dataToSubmit);
     }
   }
 
@@ -224,11 +226,11 @@ export default function Home() {
 
         <QueueOrdinations />
 
-        <SwipeableList queue={filteredQueue} onRemove={handleRemoveDeviceOfQueue} />
+        {filteredQueue && <SwipeableList queue={filteredQueue} onRemove={handleRemoveDeviceOfQueue} />}
 
-        <Snackbar open={queueAlert !== null} autoHideDuration={6000} onClose={() => setQueueAlert(null)}>
-          <Alert variant="filled" severity={queueAlert ? (Object.keys(queueAlert)[0] as AlertColor) : undefined}>
-            {queueAlert?.[Object.keys(queueAlert)[0]]}
+        <Snackbar open={alert.value !== null} autoHideDuration={6000} onClose={() => (alert.value = null)}>
+          <Alert variant="filled" severity={alert.value ? (Object.keys(alert.value)[0] as AlertColor) : undefined}>
+            {alert.value?.[Object.keys(alert.value)[0]]}
           </Alert>
         </Snackbar>
       </Main>
@@ -236,6 +238,8 @@ export default function Home() {
       <RightDrawer cardData={cardData} />
 
       <NotificationDrawer cardData={cardData} />
+
+      {isLoading && <Loading />}
     </>
   );
 }

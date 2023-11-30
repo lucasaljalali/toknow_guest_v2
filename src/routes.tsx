@@ -1,17 +1,25 @@
 import { StrictMode } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ReactKeycloakProvider } from "@react-keycloak/web";
-import { QueryClient, QueryClientProvider } from "react-query";
-import { CompanyProvider } from "./contexts/CompanyContext";
-import { QueueProvider } from "./contexts/QueueContext";
-import { ThemeContext } from "./contexts/ThemeContext";
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "react-query";
+import { CompanyProvider } from "./hooks/CompanyContext";
+import { QueueProvider } from "./hooks/useQueue";
+import { ThemeContext } from "./hooks/ThemeContext";
 import { I18nextProvider } from "react-i18next";
 import i18n from "./services/translations/i18n";
 import keycloak from "./services/keycloak/keycloak";
 import Home from "./pages/Home";
+import { alert } from "./store/signalsStore";
 
 export default function AppRoutes() {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    queryCache: new QueryCache({
+      onError: (error: any) => (alert.value = { error: error?.message }),
+    }),
+    mutationCache: new MutationCache({
+      onError: (error: any) => (alert.value = { error: error?.message }),
+    }),
+  });
 
   return (
     <ReactKeycloakProvider
@@ -31,7 +39,6 @@ export default function AppRoutes() {
                     <Routes>
                       <Route path="/" element={<Home />} />
                     </Routes>
-                    {/* <NavTab /> */}
                   </I18nextProvider>
                 </ThemeContext>
               </QueueProvider>
