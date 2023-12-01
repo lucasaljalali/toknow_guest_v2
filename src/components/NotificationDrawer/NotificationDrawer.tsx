@@ -1,31 +1,25 @@
 import { Box, Button, ClickAwayListener, Drawer, TextField, Typography } from "@mui/material";
-import { MutableRefObject, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueue } from "../../hooks/useQueue";
-import { notificationDrawerOpen, sideDrawerOpen } from "../../store/signalsStore";
-import { ITransformedInQueueData } from "../../pages/Home/utils/transformInQueueData";
+import { cardData, companyConfigs, notificationDrawerOpen, sideDrawerOpen } from "../../store/signalsStore";
 import { effect } from "@preact/signals-react";
 import { messageMaxLength } from "../../store/constants";
-import { useCompany } from "../../hooks/CompanyContext";
 
-interface INotificationDrawer {
-  cardData: MutableRefObject<ITransformedInQueueData | null>;
-}
-
-export default function NotificationDrawer({ cardData }: INotificationDrawer) {
+export default function NotificationDrawer() {
   const [message, setMessage] = useState("");
   const { notifyQueue } = useQueue();
-  const { companyConfigs } = useCompany();
+
   const { t } = useTranslation();
 
-  const defaultMessages = companyConfigs?.formFieldsData?.defaultMessages;
+  const defaultMessages = companyConfigs.value?.formFieldsData?.defaultMessages;
 
   function handleSubmit(messageId?: number | string) {
-    if (cardData.current?.id) {
+    if (cardData.value?.id) {
       const dataToSubmit = {
-        id: cardData.current?.id,
+        id: cardData.value?.id,
         actionId: 2,
-        destinationId: cardData.current?.currentDestinationId,
+        destinationId: cardData.value?.currentDestinationId,
         ...(messageId ? { messageId: Number(messageId) } : { message: message }),
       };
       notifyQueue(dataToSubmit);
@@ -35,7 +29,7 @@ export default function NotificationDrawer({ cardData }: INotificationDrawer) {
   effect(() => {
     if (notificationDrawerOpen.value === false) {
       if (message !== "") setMessage("");
-      if (sideDrawerOpen.value === false) cardData.current = null;
+      if (sideDrawerOpen.value === false) cardData.value = null;
     }
   });
 

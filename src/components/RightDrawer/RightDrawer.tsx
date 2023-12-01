@@ -1,45 +1,30 @@
 import { Autocomplete, Box, Button, ClickAwayListener, Drawer, FormControlLabel, Switch, TextField, Typography } from "@mui/material";
-import { Key, MutableRefObject, useEffect, useState } from "react";
+import { Key, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { phonePrefixs } from "../../configuration/phonePrefixs";
-import { useCompany } from "../../hooks/CompanyContext";
 import { IQueueRequestBody, useQueue } from "../../hooks/useQueue";
 import { ITransformedInQueueData } from "../../pages/Home/utils/transformInQueueData";
-import { axiosInstance } from "../../services/api/baseConfigs";
-import { alert, notificationDrawerOpen, sideDrawerOpen } from "../../store/signalsStore";
-import { effect } from "@preact/signals-react";
+import { axiosInstance } from "../../services/api/axiosInstance";
+import { alert, cardData, companyConfigs, notificationDrawerOpen, sideDrawerOpen } from "../../store/signalsStore";
 
-interface IRightDrawer {
-  cardData: MutableRefObject<ITransformedInQueueData | null>;
-}
-
-export default function RightDrawer({ cardData }: IRightDrawer) {
+export default function RightDrawer() {
   const [data, setData] = useState<ITransformedInQueueData | null>(null);
   const [codeId, setCodeId] = useState<number | null>(null);
   const [isCodeVerified, setIsCodeVerified] = useState<boolean | null>(null);
   const [countdown, setCountdown] = useState<number>(0);
-  const { companyConfigs } = useCompany();
+
   const { addQueue, updateQueue } = useQueue();
   const { t } = useTranslation();
 
-  const isEditQueue = cardData?.current?.id != undefined && `${cardData?.current.id}`.length > 0;
+  const isEditQueue = cardData.value?.id != undefined && `${cardData.value?.id}`.length > 0;
 
-  const availableDevices = companyConfigs?.formFieldsData?.devices?.filter((device) => device.isAvailable === true);
+  const availableDevices = companyConfigs.value?.formFieldsData?.devices?.filter((device) => device.isAvailable === true);
 
   const handleChange = (key: string, value: any) => {
     setData((prevData) => (prevData ? { ...prevData, [key]: value } : ({ [key]: value } as ITransformedInQueueData)));
   };
 
   useEffect(() => {
-    if (cardData?.current) {
-      setData(cardData?.current);
-      if (cardData.current.useSMS) {
-        setIsCodeVerified(true);
-      }
-    }
-  }, [cardData.current]);
-
-  effect(() => {
     if (sideDrawerOpen.value === false && data) {
       setData(null);
       setCountdown(0);
@@ -48,14 +33,22 @@ export default function RightDrawer({ cardData }: IRightDrawer) {
 
       document.querySelectorAll(".queueCard")?.forEach((card) => card.classList.remove("active"));
 
-      if (notificationDrawerOpen.value === false) cardData.current = null;
+      if (notificationDrawerOpen.value === false) cardData.value = null;
+      return;
     }
-    if (sideDrawerOpen.value === true && cardData.current?.id) {
-      const clickedCard = document.getElementById(`${cardData.current.id}`)?.querySelector(".queueCard");
+    if (sideDrawerOpen.value === true && cardData.value?.id) {
+      if (cardData.value) {
+        setData(cardData.value);
+        if (cardData.value?.useSMS) {
+          setIsCodeVerified(true);
+        }
+      }
+
+      const clickedCard = document.getElementById(`${cardData.value?.id}`)?.querySelector(".queueCard");
       clickedCard?.classList.add("active");
       return;
     }
-  });
+  }, [sideDrawerOpen.value]);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -127,13 +120,7 @@ export default function RightDrawer({ cardData }: IRightDrawer) {
 
   return (
     <ClickAwayListener onClickAway={() => (sideDrawerOpen.value = false)}>
-      <Drawer
-        className="rightDrawer"
-        anchor="right"
-        variant="persistent"
-        open={sideDrawerOpen.value}
-        onClose={() => (sideDrawerOpen.value = false)}
-      >
+      <Drawer className="rightDrawer" anchor="right" variant="persistent" open={sideDrawerOpen.value}>
         <Typography variant="h6" className="drawerTitle">
           {isEditQueue
             ? `${t("FORM_LABEL_ARRIVED_AT")} ${data?.createdDate?.split("T")?.[1]?.slice(0, -3)}`
@@ -251,7 +238,7 @@ export default function RightDrawer({ cardData }: IRightDrawer) {
                   options={
                     isEditQueue
                       ? [
-                          companyConfigs?.formFieldsData?.devices?.find((device) => device.id === data?.deviceId)?.id,
+                          companyConfigs.value?.formFieldsData?.devices?.find((device) => device.id === data?.deviceId)?.id,
                           ...(availableDevices?.map((device) => device.id) || []),
                         ] || []
                       : availableDevices?.map((device) => device.id) || []
@@ -263,7 +250,7 @@ export default function RightDrawer({ cardData }: IRightDrawer) {
                   renderOption={(props, option) => {
                     return (
                       <li {...props} key={option as Key}>
-                        {companyConfigs?.formFieldsData?.devices?.find((device) => device.id === option)?.label}
+                        {companyConfigs.value?.formFieldsData?.devices?.find((device) => device.id === option)?.label}
                       </li>
                     );
                   }}
@@ -276,17 +263,17 @@ export default function RightDrawer({ cardData }: IRightDrawer) {
             fullWidth
             multiple
             inputMode="none"
-            options={companyConfigs?.formFieldsData?.priorities?.map((priority) => priority.id) || []}
+            options={companyConfigs.value?.formFieldsData?.priorities?.map((priority) => priority.id) || []}
             value={data?.priorities || []}
             onChange={(_event, value) => handleChange("priorities", value)}
             renderInput={(params) => <TextField {...params} type="text" name="priorities" label={t("FORM_LABEL_PRIORITIES")} />}
             getOptionLabel={(option) =>
-              t(companyConfigs?.formFieldsData?.priorities?.find((priority) => priority.id === option)?.label || "")
+              t(companyConfigs.value?.formFieldsData?.priorities?.find((priority) => priority.id === option)?.label || "")
             }
             renderOption={(props, option) => {
               return (
                 <li {...props} key={option}>
-                  {t(companyConfigs?.formFieldsData?.priorities?.find((priority) => priority.id === option)?.label || "")}
+                  {t(companyConfigs.value?.formFieldsData?.priorities?.find((priority) => priority.id === option)?.label || "")}
                 </li>
               );
             }}

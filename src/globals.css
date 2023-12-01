@@ -73,6 +73,13 @@ a {
   text-decoration: none;
 }
 
+#queueMainContainer {
+  min-height: 100vh;
+  flex-grow: 1;
+  padding: 1rem;
+  transition: margin 0.2s ease-out;
+}
+
 .topBarContainer {
   position: relative;
   display: flex;

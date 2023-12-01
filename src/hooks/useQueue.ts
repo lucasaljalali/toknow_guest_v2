@@ -1,16 +1,7 @@
-import { createContext, useContext } from "react";
-import { axiosInstance } from "../services/api/baseConfigs";
+import { axiosInstance } from "../services/api/axiosInstance";
 import { UseMutateFunction, useMutation, useQuery, useQueryClient } from "react-query";
 import { InQueueItem } from "../services/api/dtos/Queue";
-import { notificationDrawerOpen, sideDrawerOpen } from "../store/signalsStore";
-
-const QueueContext = createContext({} as QueueContextData);
-
-export function useQueue() {
-  return useContext(QueueContext);
-}
-
-type Props = { children: JSX.Element | JSX.Element[] };
+import { companyConfigs, notificationDrawerOpen, sideDrawerOpen } from "../store/signalsStore";
 
 export interface IQueueRequestBody {
   clientsId: number[];
@@ -36,20 +27,21 @@ export interface INotifyQueueRequestBody {
   message?: string;
 }
 export interface QueueContextData {
-  queue?: InQueueItem[];
+  queue: InQueueItem[] | undefined;
   addQueue: UseMutateFunction<any, unknown, IQueueRequestBody, unknown>;
   updateQueue: UseMutateFunction<any, unknown, IQueueRequestBody, unknown>;
   notifyQueue: UseMutateFunction<any, unknown, INotifyQueueRequestBody, unknown>;
   isLoading: boolean;
 }
-export function QueueProvider({ children }: Props) {
+export function useQueue() {
   const queryClient = useQueryClient();
 
   const { data: queue, isLoading: isQueueLoading } = useQuery(["queue"], {
     queryFn: async () => {
-      const response = await axiosInstance.get("queues");
-      return response.data.data as InQueueItem[];
+      const response = await axiosInstance?.get("queues");
+      return response?.data.data as InQueueItem[];
     },
+    enabled: companyConfigs.value !== null,
     retry: true,
     retryDelay: 5000,
     refetchInterval: 5000,
@@ -57,8 +49,8 @@ export function QueueProvider({ children }: Props) {
 
   const { mutate: addQueue, isLoading: isAddQueueLoading } = useMutation({
     mutationFn: async (queueRequestBody: IQueueRequestBody) => {
-      const response = await axiosInstance.post("queues", queueRequestBody);
-      return response.data.data;
+      const response = await axiosInstance?.post("queues", queueRequestBody);
+      return response?.data.data;
     },
     onSuccess: () => {
       if (sideDrawerOpen.value) sideDrawerOpen.value = false;
@@ -69,8 +61,8 @@ export function QueueProvider({ children }: Props) {
 
   const { mutate: updateQueue, isLoading: isUpdateQueueLoading } = useMutation({
     mutationFn: async (queueRequestBody: IQueueRequestBody) => {
-      const response = await axiosInstance.put(`queues/${queueRequestBody?.id}`, queueRequestBody);
-      return response.data.data as InQueueItem;
+      const response = await axiosInstance?.put(`queues/${queueRequestBody?.id}`, queueRequestBody);
+      return response?.data.data as InQueueItem;
     },
     onSuccess: () => {
       if (sideDrawerOpen.value) sideDrawerOpen.value = false;
@@ -81,9 +73,8 @@ export function QueueProvider({ children }: Props) {
 
   const { mutate: notifyQueue, isLoading: isNotifyQueueLoading } = useMutation({
     mutationFn: async (notifyQueueRequestBody: INotifyQueueRequestBody) => {
-      const response = await axiosInstance.put(`queues/${notifyQueueRequestBody?.id}/notify`, notifyQueueRequestBody);
-      console.log({ response });
-      return response.data;
+      const response = await axiosInstance?.put(`queues/${notifyQueueRequestBody?.id}/notify`, notifyQueueRequestBody);
+      return response?.data;
     },
     onSuccess: () => {
       if (notificationDrawerOpen.value) notificationDrawerOpen.value = false;
@@ -94,13 +85,11 @@ export function QueueProvider({ children }: Props) {
 
   const isLoading = isQueueLoading || isAddQueueLoading || isUpdateQueueLoading || isNotifyQueueLoading;
 
-  const value: QueueContextData = {
+  return {
     queue,
     addQueue,
     updateQueue,
     notifyQueue,
     isLoading,
   };
-
-  return <QueueContext.Provider value={value}>{children}</QueueContext.Provider>;
 }

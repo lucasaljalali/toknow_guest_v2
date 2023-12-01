@@ -1,245 +1,77 @@
-import { useEffect, useRef } from "react";
-import { Alert, AlertColor, Snackbar, styled } from "@mui/material";
-import { useGesture } from "@use-gesture/react";
-import { useQueue } from "../../hooks/useQueue";
-import { useCompany } from "../../hooks/CompanyContext";
-import { InQueueItem } from "../../services/api/dtos/Queue";
-import { ITransformedInQueueData, transformInQueueData } from "./utils/transformInQueueData";
-import {
-  alert,
-  filtersOpen,
-  filtersSelection,
-  notificationDrawerOpen,
-  queueCardSize,
-  sideDrawerOpen,
-  windowWidth,
-} from "../../store/signalsStore";
-import { TQueueCardSize } from "../../store/types";
-import QueueCard from "../../components/QueueCard/QueueCard";
+import { useEffect } from "react";
+import { Alert, AlertColor, Snackbar } from "@mui/material";
+import { accessToken, alert, company, notificationDrawerOpen, sideDrawerOpen, windowWidth } from "../../store/signalsStore";
+import { handleInitialConfigs } from "./utils/handleInitialConfigs";
+import { handleTokenRefresh } from "./utils/handleTokenRefresh";
+import { handleLimitSize } from "./utils/handleLimitSize";
+import { axiosInstance } from "../../services/api/axiosInstance";
 import TopBar from "../../components/TopBar/TopBar";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import RightDrawer from "../../components/RightDrawer/RightDrawer";
 import QueueOrdinations from "../../components/Ordinations/QueueOrdinations";
 import NotificationDrawer from "../../components/NotificationDrawer/NotificationDrawer";
+import Queue from "../../components/Queue/Queue";
+import keycloak from "../../services/auth/keycloak";
+import i18n from "../../services/translations/i18n";
+import useCompany from "../../hooks/useCompany";
 import Loading from "../../components/Loading/Loading";
 
 export default function Home() {
-  const { queue, notifyQueue, isLoading } = useQueue();
-  const { refetchConfigs, companyConfigs } = useCompany();
-
-  const transformedQueue = queue?.map((queueItem) => transformInQueueData(queueItem, companyConfigs));
-
-  const filteredQueue = transformedQueue?.filter((transformedQueueItem) => {
-    const filteredProps = Object.keys(filtersSelection.value);
-
-    const matches = filteredProps?.filter((prop) => {
-      const filteredValue = filtersSelection.value[prop] as any[];
-
-      let transformedQueueItemValue = transformedQueueItem[prop as keyof ITransformedInQueueData];
-
-      if (Array.isArray(transformedQueueItemValue)) {
-        return transformedQueueItemValue?.find((value) => filteredValue?.includes(value));
-      } else {
-        return filteredValue.includes(transformedQueueItemValue);
-      }
-    });
-
-    return matches.length === filteredProps.length;
-  });
-
-  const cardData = useRef<ITransformedInQueueData | null>(null);
-
   const drawerWidth = document?.querySelector(".rightDrawer")?.querySelector(".MuiPaper-root")?.clientWidth;
 
-  const doubleTouchThreshold = 300;
-  let firstTouchTimestamp = 0;
+  const changeContainerWidth = (sideDrawerOpen.value || notificationDrawerOpen.value) && windowWidth.value > 900;
 
-  const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
-    open?: boolean;
-  }>(({ theme, open }) => ({
-    minHeight: "100vh",
-    flexGrow: 1,
-    padding: theme.spacing(3),
-    transition: theme.transitions.create("margin", {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-    marginRight: 0,
-    ...(open && {
-      transition: theme.transitions.create("margin", {
-        easing: theme.transitions.easing.easeOut,
-        duration: theme.transitions.duration.enteringScreen,
-      }),
-      marginRight: drawerWidth && `${drawerWidth}px`,
-    }),
-  }));
+  const { refetch: refetchConfigs, isLoading: isConfigsLoading } = useCompany();
 
   useEffect(() => {
-    refetchConfigs();
-  }, [queue]);
-
-  useEffect(() => {
-    const limitSize = () => {
-      if (window.innerWidth < 768 && queueCardSize.value === "large") {
-        queueCardSize.value = "medium";
-      }
-
-      if (window.innerWidth >= 768 && (sessionStorage.getItem("queueCardSize") as TQueueCardSize)) {
-        if ((sessionStorage.getItem("queueCardSize") as TQueueCardSize) !== queueCardSize.value)
-          queueCardSize.value = sessionStorage.getItem("queueCardSize") as TQueueCardSize;
-      }
-    };
-
-    const handleResize = () => {
-      windowWidth.value = window.innerWidth;
-      limitSize();
-    };
-
-    window.addEventListener("resize", handleResize);
-    limitSize();
+    keycloak.onAuthSuccess = handleInitialConfigs;
+    keycloak.onTokenExpired = handleTokenRefresh;
 
     return () => {
-      window.removeEventListener("resize", handleResize);
+      keycloak.onTokenExpired = undefined;
+      keycloak.onAuthSuccess = undefined;
+    };
+  }, [keycloak]);
+
+  useEffect(() => {
+    if (company.value && accessToken.value) {
+      axiosInstance.defaults.headers.common = {
+        locale: i18n?.language,
+        tenant: company.value,
+        Authorization: `Bearer ${accessToken.value}`,
+      };
+      refetchConfigs();
+    }
+  }, [company.value, accessToken.value]);
+
+  useEffect(() => {
+    window.addEventListener("resize", () => handleLimitSize(window.innerWidth));
+
+    return () => {
+      window.removeEventListener("resize", () => handleLimitSize(window.innerWidth));
     };
   }, [window.innerWidth]);
 
-  function SwipeableCard({ clientData, onRemove }: { clientData: InQueueItem; onRemove: Function }) {
-    const cardRef = useRef<HTMLDivElement | null>(null);
-
-    const transformedData = transformInQueueData(clientData, companyConfigs);
-
-    const bind = useGesture(
-      {
-        onMouseDown: () => (cardData.current = transformedData),
-        onTouchStart: () => (cardData.current = transformedData),
-        onClick: ({ event }) => {
-          event.preventDefault();
-          event.stopPropagation();
-
-          if (filtersOpen.value === true) {
-            filtersOpen.value = false;
-          }
-          if (event.detail === 2) {
-            sideDrawerOpen.value = !sideDrawerOpen.value;
-          }
-        },
-        onTouchEnd: ({ event }) => {
-          event.preventDefault();
-          event.stopPropagation();
-          if (firstTouchTimestamp === 0) {
-            firstTouchTimestamp = event.timeStamp;
-          } else {
-            const timeDifference = event.timeStamp - firstTouchTimestamp;
-
-            if (timeDifference <= doubleTouchThreshold) {
-              // This is a double touch
-              sideDrawerOpen.value = !sideDrawerOpen.value;
-              // Reset the timestamp
-              firstTouchTimestamp = 0;
-              return;
-            }
-          }
-          // If it's not a double touch, reset the timestamp
-          firstTouchTimestamp = event.timeStamp;
-        },
-
-        onDrag: ({ movement: [dx], last }) => {
-          const cardWidth = cardRef.current?.clientWidth || window.innerWidth;
-          const isToRemoveDivider = queueCardSize.value === "small" ? 1.5 : 4;
-          const isToRemoveLeft = dx < -cardWidth / isToRemoveDivider;
-          const isToRemoveRight = dx > cardWidth / isToRemoveDivider;
-
-          if (cardRef.current) {
-            const redBackground = cardRef.current.parentElement;
-            const trash = redBackground && (redBackground?.querySelector(".queueHiddenTrash") as HTMLElement);
-            if (trash) {
-              trash.style.right = dx > 0 ? "unset" : "4rem";
-              trash.style.left = dx < 0 ? "unset" : "4rem";
-              trash.style.transform = `translate(${dx > 0 ? "-50%" : "50%"},-50%)`;
-              trash.style.fontSize = isToRemoveLeft || isToRemoveRight ? "3rem" : "1.5rem";
-            }
-
-            cardRef.current.style.transform = `translateX(${dx}px)`;
-
-            if (last) {
-              if (isToRemoveLeft || isToRemoveRight) {
-                onRemove(transformedData.id, 6, transformedData.currentDestinationId, 6);
-                if (redBackground) redBackground.style.opacity = "0";
-                cardRef.current.style.left = isToRemoveLeft ? `-${windowWidth.value}px` : `${windowWidth.value}px`;
-              } else {
-                cardRef.current.style.transition = ".3s";
-                cardRef.current.style.transform = `translateX(${0}px)`;
-                setTimeout(() => {
-                  if (cardRef.current) cardRef.current.style.transition = "unset";
-                }, 300);
-              }
-            }
-          }
-        },
-      },
-      {
-        drag: {
-          axis: "x",
-        },
-      }
-    );
-
-    return (
-      <div className={`queueHiddenTrashContainer ${queueCardSize.value}`}>
-        <DeleteForeverIcon className="queueHiddenTrash" />
-        <div
-          ref={cardRef}
-          id={String(transformedData.id)}
-          className="allCardsTypesContainer"
-          style={{ touchAction: "pan-y" }}
-          {...bind()}
-        >
-          <QueueCard key={transformedData.id} data={transformedData} />
-        </div>
-      </div>
-    );
-  }
-
-  function SwipeableList({ queue, onRemove }: { queue: InQueueItem[]; onRemove: Function }) {
-    return (
-      <div className={`queueContainer`}>
-        <div className={`queueList ${queueCardSize.value}`}>
-          {queue?.map((clientData) => (
-            <SwipeableCard key={clientData.id} clientData={clientData} onRemove={onRemove} />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  function handleRemoveDeviceOfQueue(queueId?: string | number, actionId?: number, destinationId?: number, messageId?: number) {
-    if (queueId) {
-      const dataToSubmit = { id: queueId, actionId: actionId, destinationId: destinationId, messageId: messageId };
-      notifyQueue(dataToSubmit);
-    }
-  }
-
   return (
     <>
-      <Main open={(sideDrawerOpen.value || notificationDrawerOpen.value) && windowWidth.value > 900}>
+      <div id={"queueMainContainer"} style={{ marginRight: changeContainerWidth ? drawerWidth : 0 }}>
         <TopBar />
 
         <QueueOrdinations />
 
-        {filteredQueue && <SwipeableList queue={filteredQueue} onRemove={handleRemoveDeviceOfQueue} />}
+        <Queue />
 
         <Snackbar open={alert.value !== null} autoHideDuration={6000} onClose={() => (alert.value = null)}>
           <Alert variant="filled" severity={alert.value ? (Object.keys(alert.value)[0] as AlertColor) : undefined}>
             {alert.value?.[Object.keys(alert.value)[0]]}
           </Alert>
         </Snackbar>
-      </Main>
+      </div>
 
-      <RightDrawer cardData={cardData} />
+      <RightDrawer />
 
-      <NotificationDrawer cardData={cardData} />
+      <NotificationDrawer />
 
-      {isLoading && <Loading />}
+      {isConfigsLoading && <Loading />}
     </>
   );
 }

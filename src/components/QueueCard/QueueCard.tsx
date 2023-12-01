@@ -7,7 +7,7 @@ import { notificationDrawerOpen, queueCardSize } from "../../store/signalsStore"
 import DeviceIcon from "../DeviceIcon/DeviceIcon";
 
 interface IQueueLongCard {
-  data: ITransformedInQueueData;
+  data: ITransformedInQueueData | null;
 }
 
 export default function QueueCard({ data }: IQueueLongCard) {
@@ -35,7 +35,7 @@ export default function QueueCard({ data }: IQueueLongCard) {
     }
   }
 
-  function handleDeviceClick(event: MouseEvent | TouchEvent, data: InQueueItem) {
+  function handleDeviceClick(event: MouseEvent | TouchEvent, data: InQueueItem | null) {
     event.preventDefault();
 
     if (event.type === "mouseup" || event.type === "touchend") {

@@ -1,5 +1,5 @@
-import { InCompanyConfigs } from "../../../services/api/dtos/CompanyConfigs";
 import { InQueueItem } from "../../../services/api/dtos/Queue";
+import { companyConfigs } from "../../../store/signalsStore";
 
 export interface ITransformedInQueueData extends InQueueItem {
   partySize?: string;
@@ -16,12 +16,12 @@ export interface ITransformedInQueueData extends InQueueItem {
   queueStateLabel?: string;
 }
 
-export function transformInQueueData(data: InQueueItem, companyConfigs?: InCompanyConfigs): ITransformedInQueueData {
+export function transformInQueueData(data: InQueueItem): ITransformedInQueueData {
   const partySize = data?.carPlate; //workaround to use premium api
   const name = data?.driverName; //workaround to use premium api
   const estimatedTime = data?.carBackPlate; //workaround to use premium api
   const prioritiesLabels = data?.priorities?.map(
-    (priority) => companyConfigs?.formFieldsData?.priorities?.find((item) => item.id === priority)?.label
+    (priority) => companyConfigs.value?.formFieldsData?.priorities?.find((item) => item.id === priority)?.label
   );
   const createdDate = data?.createdDate && new Date(data.createdDate);
   const currentDate = new Date();
@@ -36,7 +36,7 @@ export function transformInQueueData(data: InQueueItem, companyConfigs?: InCompa
   const notifed = lastNotification != undefined;
   const phonePrefix = data?.driverPhonePrefix;
   const phoneNumber = data?.driverPhone;
-  const queueStateLabel = companyConfigs?.formFieldsData?.queueStates.find((item) => item.id === data?.queueStateId)?.label;
+  const queueStateLabel = companyConfigs.value?.formFieldsData?.queueStates.find((item) => item.id === data?.queueStateId)?.label;
 
   const newData = {
     ...data,

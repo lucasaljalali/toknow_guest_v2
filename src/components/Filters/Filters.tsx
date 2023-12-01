@@ -5,16 +5,15 @@ import { filtersOptions } from "../../store/constants";
 import { useTranslation } from "react-i18next";
 import { useQueue } from "../../hooks/useQueue";
 import { transformInQueueData } from "../../pages/Home/utils/transformInQueueData";
-import { useCompany } from "../../hooks/CompanyContext";
+
 import { effect } from "@preact/signals-react";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 
 export default function Filters() {
   const { t } = useTranslation();
   const { queue } = useQueue();
-  const { companyConfigs } = useCompany();
 
-  const transformedQueue = queue?.map((item) => transformInQueueData(item, companyConfigs));
+  const transformedQueue = queue?.map((item) => transformInQueueData(item));
 
   function handleChange(event: SelectChangeEvent) {
     filtersSelection.value = {

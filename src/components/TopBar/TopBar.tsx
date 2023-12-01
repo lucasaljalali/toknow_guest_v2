@@ -1,13 +1,14 @@
 import { MouseEvent, TouchEvent, useEffect, useRef, useState } from "react";
 import { Button, IconButton, Typography } from "@mui/material";
 import { useQueue } from "../../hooks/useQueue";
-import { useCompany } from "../../hooks/CompanyContext";
 import { useTranslation } from "react-i18next";
 import { ClickAwayListener } from "@mui/base/ClickAwayListener";
 import { useGesture } from "@use-gesture/react";
-import { queueCardSize, sideDrawerOpen, windowWidth } from "../../store/signalsStore";
+import { companyConfigs, queueCardSize, sideDrawerOpen, windowWidth } from "../../store/signalsStore";
 import { TQueueCardSize } from "../../store/types";
-import keycloak from "../../services/keycloak/keycloak";
+import { useQueryClient } from "react-query";
+import { InQueueItem } from "../../services/api/dtos/Queue";
+import keycloak from "../../services/auth/keycloak";
 import AddIcon from "@mui/icons-material/Add";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 // import QrCodeIcon from "@mui/icons-material/QrCode";
@@ -20,14 +21,15 @@ import Filters from "../Filters/Filters";
 export default function TopBar() {
   const [devicesOpen, setDevicesOpen] = useState(false);
   const [scrolling, setScrolling] = useState(false);
-  const { companyConfigs } = useCompany();
-  const { queue, addQueue } = useQueue();
+  const { addQueue } = useQueue();
   const { t } = useTranslation();
+
+  const queue = useQueryClient().getQueryData("queue") as InQueueItem[];
 
   const pressTimerRef = useRef<number | null>(null);
   const longPressDuration = 2000;
 
-  const availableDevices = companyConfigs?.formFieldsData?.devices?.filter((device) => device.isAvailable);
+  const availableDevices = companyConfigs.value?.formFieldsData?.devices?.filter((device) => device.isAvailable);
   const noAvailableDevices = availableDevices?.length === 0;
 
   const bindAddIcon = useGesture({
@@ -156,7 +158,7 @@ export default function TopBar() {
         <img onClick={logout} src={continenteLogo} className="mainLogo" style={{ display: sideDrawerOpen.value ? "none" : "block" }} />
 
         <div className="buttonsContainer">
-          <IconButton className="roundedSecondaryIconButton defaultCursor">{queue?.length}</IconButton>
+          <IconButton className="roundedSecondaryIconButton defaultCursor">{queue?.length || 0}</IconButton>
 
           <Filters />
 
