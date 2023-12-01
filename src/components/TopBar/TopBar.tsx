@@ -37,6 +37,7 @@ export default function TopBar() {
       pressTimerRef.current = setTimeout(() => {
         // Long press
         sideDrawerOpen.value = !sideDrawerOpen.value;
+        pressTimerRef.current = null;
       }, longPressDuration);
     },
     onPointerUp: () => {
@@ -79,8 +80,6 @@ export default function TopBar() {
       destinationId: 1,
       deviceId: deviceId,
       carPlateNumber: "1",
-      carBackPlateNumber: "",
-      observations: "",
       useSMS: false,
     };
 

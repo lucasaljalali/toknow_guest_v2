@@ -35,13 +35,7 @@ export default function NotificationDrawer() {
 
   return (
     <ClickAwayListener onClickAway={() => (notificationDrawerOpen.value = false)}>
-      <Drawer
-        className="rightDrawer"
-        anchor="right"
-        variant="persistent"
-        open={notificationDrawerOpen.value}
-        onClose={() => (notificationDrawerOpen.value = false)}
-      >
+      <Drawer className="rightDrawer" anchor="right" variant="persistent" open={notificationDrawerOpen.value}>
         <Typography variant="h6" className="drawerTitle">
           {t("FORM_LABEL_SEND_MESSAGE")}
         </Typography>

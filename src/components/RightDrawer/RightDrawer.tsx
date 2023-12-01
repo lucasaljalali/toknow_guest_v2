@@ -13,6 +13,8 @@ export default function RightDrawer() {
   const [isCodeVerified, setIsCodeVerified] = useState<boolean | null>(null);
   const [countdown, setCountdown] = useState<number>(0);
 
+  let clickAwayCount = 0;
+
   const { addQueue, updateQueue } = useQueue();
   const { t } = useTranslation();
 
@@ -118,8 +120,15 @@ export default function RightDrawer() {
     }
   }
 
+  function handleClickAway() {
+    clickAwayCount++;
+    if (clickAwayCount > 1) {
+      sideDrawerOpen.value = false;
+    }
+  }
+
   return (
-    <ClickAwayListener onClickAway={() => (sideDrawerOpen.value = false)}>
+    <ClickAwayListener onClickAway={handleClickAway}>
       <Drawer className="rightDrawer" anchor="right" variant="persistent" open={sideDrawerOpen.value}>
         <Typography variant="h6" className="drawerTitle">
           {isEditQueue

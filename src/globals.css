@@ -546,6 +546,10 @@ a {
   .mainLogo {
     display: none !important;
   }
+
+  #queueMainContainer {
+    padding: 0 1rem;
+  }
   
   .smallScreenMainLogoContainer {
     display: flex;
