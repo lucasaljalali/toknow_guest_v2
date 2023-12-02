@@ -34,29 +34,20 @@ export default function RightDrawer() {
   const isEditQueue = cardData.value?.id != undefined && `${cardData.value?.id}`.length > 0;
 
   useEffect(() => {
-    if (sideDrawerOpen.value === false) {
-      formik.resetForm();
-      countdown.value = 0;
-      codeId.value = null;
-      isCodeVerified.value = null;
+    if (sideDrawerOpen.value && cardData.value && cardData.value?.id) {
+      formik.setValues(transformInQueueData(cardData.value));
 
       document.querySelectorAll(".queueCard")?.forEach((card) => card.classList.remove("active"));
-    }
-    if (sideDrawerOpen.value === true) {
-      if (cardData.value && cardData.value?.id) {
-        formik.setValues(transformInQueueData(cardData.value));
-
-        if (cardData.value?.useSMS) {
-          isCodeVerified.value = true;
-        }
-      } else if (availableDevices.value) {
-        formik.setFieldValue("deviceId", availableDevices.value?.[0]?.id);
-      }
-
       const clickedCard = document.getElementById(`${cardData.value?.id}`)?.querySelector(".queueCard");
       clickedCard?.classList.add("active");
+
+      if (cardData.value?.useSMS) {
+        isCodeVerified.value = true;
+      }
+    } else if (availableDevices.value) {
+      formik.setFieldValue("deviceId", availableDevices.value?.[0]?.id);
     }
-  }, [sideDrawerOpen.value]);
+  }, [sideDrawerOpen.value, cardData.value]);
 
   useEffect(() => {
     if (countdown.value > 0) {
@@ -86,6 +77,8 @@ export default function RightDrawer() {
     const cleanDataToSubmit = getCleanData(dataToSubmit);
 
     isEditQueue ? updateQueue(cleanDataToSubmit) : addQueue(cleanDataToSubmit);
+
+    handleCloseForm();
   }
 
   async function handleVerifyCode() {
@@ -130,9 +123,19 @@ export default function RightDrawer() {
 
   function handleClickAway() {
     clickAwayCount++;
-    if (clickAwayCount > 1) {
-      sideDrawerOpen.value = false;
+    if (clickAwayCount > 1 || isEditQueue) {
+      handleCloseForm();
     }
+  }
+
+  function handleCloseForm() {
+    formik.resetForm();
+    countdown.value = 0;
+    codeId.value = null;
+    isCodeVerified.value = null;
+    document.querySelectorAll(".queueCard")?.forEach((card) => card.classList.remove("active"));
+    cardData.value = null;
+    sideDrawerOpen.value = false;
   }
 
   return (
