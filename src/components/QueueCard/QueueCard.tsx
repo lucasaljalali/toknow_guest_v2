@@ -58,7 +58,7 @@ export default function QueueCard({ data }: IQueueLongCard) {
         setTimeout(() => {
           clickedDevice?.classList.remove("active");
         }, 2000);
-        handleNotifyDevice(data?.id, 2, data?.currentDestinationId, 1);
+        data?.id && handleNotifyDevice(data.id, 2, data?.currentDestinationId, 1);
 
         // Reset the timestamp
         firstTouchTimestamp = 0;
@@ -75,7 +75,7 @@ export default function QueueCard({ data }: IQueueLongCard) {
       setTimeout(() => {
         clickedDevice?.classList.remove("active");
       }, 2000);
-      handleNotifyDevice(data?.id, 2, data?.currentDestinationId, 1);
+      data?.id && handleNotifyDevice(data.id, 2, data?.currentDestinationId, 1);
     }
   }
 
