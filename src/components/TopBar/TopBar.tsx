@@ -17,12 +17,17 @@ import continenteLogo from "../../assets/images/continente.png";
 // import auchanLogo from "../../assets/images/auchan.png"
 import DeviceIcon from "../DeviceIcon/DeviceIcon";
 import Filters from "../Filters/Filters";
+import Loading from "../Loading/Loading";
+import useCompany from "../../hooks/useCompany";
 
 export default function TopBar() {
   const [devicesOpen, setDevicesOpen] = useState(false);
   const [scrolling, setScrolling] = useState(false);
-  const { addQueue } = useQueue();
+  const { addQueue, isLoading: isQueueLoading } = useQueue();
+  const { isLoading: isConfigLoading } = useCompany();
   const { t } = useTranslation();
+
+  const isLoading = isQueueLoading || isConfigLoading;
 
   const queue = useQueryClient().getQueryData("queue") as InQueueItem[];
 
@@ -115,8 +120,8 @@ export default function TopBar() {
       <div className="topBarContainer">
         <div className="buttonsContainer">
           <ClickAwayListener onClickAway={() => setDevicesOpen(false)}>
-            <IconButton className="addDeviceButton" {...bindAddIcon()}>
-              <AddIcon />
+            <IconButton className="addDeviceButton" {...bindAddIcon()} disabled={isLoading}>
+              {isLoading ? <Loading size={1.5} /> : <AddIcon />}
             </IconButton>
           </ClickAwayListener>
           {/* <IconButton className="addDeviceButton">
@@ -157,7 +162,9 @@ export default function TopBar() {
         <img onClick={logout} src={continenteLogo} className="mainLogo" style={{ display: sideDrawerOpen.value ? "none" : "block" }} />
 
         <div className="buttonsContainer">
-          <IconButton className="roundedSecondaryIconButton defaultCursor">{queue?.length || 0}</IconButton>
+          <IconButton className="roundedSecondaryIconButton defaultCursor">
+            {isLoading ? <Loading size={1.5} /> : queue?.length || 0}
+          </IconButton>
 
           <Filters />
 

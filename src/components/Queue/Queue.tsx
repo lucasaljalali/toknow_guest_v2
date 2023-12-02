@@ -19,7 +19,7 @@ export default function Queue() {
     <div className={`queueContainer`}>
       {isLoading && <Loading />}
       {queue?.length === 0 ? (
-        <Typography>{"EMPTY QUEUE"}</Typography>
+        <Typography className="emptyQueueMessage">{"EMPTY QUEUE"}</Typography>
       ) : (
         <div className={`queueList ${queueCardSize.value}`}>
           {queue?.map((clientData) => (
