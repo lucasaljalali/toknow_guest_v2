@@ -1,13 +1,11 @@
 import { Box, Button, ClickAwayListener, Drawer, TextField, Typography } from "@mui/material";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueue } from "../../hooks/useQueue";
-import { cardData, companyConfigs, notificationDrawerOpen, sideDrawerOpen } from "../../store/signalsStore";
+import { cardData, companyConfigs, message, notificationDrawerOpen, sideDrawerOpen } from "../../store/signalsStore";
 import { effect } from "@preact/signals-react";
 import { messageMaxLength } from "../../store/constants";
 
 export default function NotificationDrawer() {
-  const [message, setMessage] = useState("");
   const { notifyQueue } = useQueue();
 
   const { t } = useTranslation();
@@ -20,7 +18,7 @@ export default function NotificationDrawer() {
         id: cardData.value?.id,
         actionId: 2,
         destinationId: cardData.value?.currentDestinationId,
-        ...(messageId ? { messageId: Number(messageId) } : { message: message }),
+        ...(messageId ? { messageId: Number(messageId) } : { message: message.value }),
       };
       notifyQueue(dataToSubmit);
     }
@@ -28,7 +26,7 @@ export default function NotificationDrawer() {
 
   effect(() => {
     if (notificationDrawerOpen.value === false) {
-      if (message !== "") setMessage("");
+      if (message.value !== "") message.value = "";
       if (sideDrawerOpen.value === false) cardData.value = null;
     }
   });
@@ -51,8 +49,8 @@ export default function NotificationDrawer() {
             name="message"
             label={t("FORM_LABEL_MESSAGE")}
             helperText={`${t("FORM_HELPER_MAX_LENGTH")}: ${messageMaxLength}`}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            value={message.value}
+            onChange={(e) => (message.value = e.target.value)}
           />
 
           <Button id="sendMessageButton" fullWidth variant="contained" onClick={() => handleSubmit()}>

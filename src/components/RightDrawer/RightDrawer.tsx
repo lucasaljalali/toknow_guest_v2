@@ -1,108 +1,116 @@
 import { Autocomplete, Box, Button, ClickAwayListener, Drawer, FormControlLabel, Switch, TextField, Typography } from "@mui/material";
-import { Key, useEffect, useState } from "react";
+import { Key, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { phonePrefixs } from "../../configuration/phonePrefixs";
 import { IQueueRequestBody, useQueue } from "../../hooks/useQueue";
-import { ITransformedInQueueData } from "../../pages/Home/utils/transformInQueueData";
 import { axiosInstance } from "../../services/api/axiosInstance";
-import { alert, cardData, companyConfigs, notificationDrawerOpen, sideDrawerOpen } from "../../store/signalsStore";
+import {
+  alert,
+  availableDevices,
+  cardData,
+  codeId,
+  companyConfigs,
+  countdown,
+  isCodeVerified,
+  sideDrawerOpen,
+} from "../../store/signalsStore";
+import { useFormik } from "formik";
+import { transformInQueueData } from "../../pages/Home/utils/transformInQueueData";
+import { initialValues, validationSchema } from "./utils/validationSchema";
+import { getCleanData } from "./utils/handleCleanData";
 
 export default function RightDrawer() {
-  const [data, setData] = useState<ITransformedInQueueData | null>(null);
-  const [codeId, setCodeId] = useState<number | null>(null);
-  const [isCodeVerified, setIsCodeVerified] = useState<boolean | null>(null);
-  const [countdown, setCountdown] = useState<number>(0);
-
-  let clickAwayCount = 0;
+  const formik = useFormik({
+    initialValues,
+    validationSchema,
+    onSubmit: handleSubmit,
+  });
 
   const { addQueue, updateQueue } = useQueue();
   const { t } = useTranslation();
 
+  let clickAwayCount = 0;
+
   const isEditQueue = cardData.value?.id != undefined && `${cardData.value?.id}`.length > 0;
 
-  const availableDevices = companyConfigs.value?.formFieldsData?.devices?.filter((device) => device.isAvailable === true);
-
-  const handleChange = (key: string, value: any) => {
-    setData((prevData) => (prevData ? { ...prevData, [key]: value } : ({ [key]: value } as ITransformedInQueueData)));
-  };
-
   useEffect(() => {
-    if (sideDrawerOpen.value === false && data) {
-      setData(null);
-      setCountdown(0);
-      setCodeId(null);
-      setIsCodeVerified(null);
+    if (sideDrawerOpen.value === false) {
+      formik.resetForm();
+      countdown.value = 0;
+      codeId.value = null;
+      isCodeVerified.value = null;
 
       document.querySelectorAll(".queueCard")?.forEach((card) => card.classList.remove("active"));
-
-      if (notificationDrawerOpen.value === false) cardData.value = null;
-      return;
     }
-    if (sideDrawerOpen.value === true && cardData.value?.id) {
-      if (cardData.value) {
-        setData(cardData.value);
+    if (sideDrawerOpen.value === true) {
+      if (cardData.value && cardData.value?.id) {
+        formik.setValues(transformInQueueData(cardData.value));
+
         if (cardData.value?.useSMS) {
-          setIsCodeVerified(true);
+          isCodeVerified.value = true;
         }
+      } else if (availableDevices.value) {
+        formik.setFieldValue("deviceId", availableDevices.value?.[0]?.id);
       }
 
       const clickedCard = document.getElementById(`${cardData.value?.id}`)?.querySelector(".queueCard");
       clickedCard?.classList.add("active");
-      return;
     }
   }, [sideDrawerOpen.value]);
 
   useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    if (countdown.value > 0) {
+      const timer = setTimeout(() => (countdown.value = countdown.value - 1), 1000);
       return () => clearTimeout(timer);
     }
-    setCodeId(null);
-  }, [countdown]);
+    codeId.value = null;
+  }, [countdown.value]);
 
   function handleSubmit() {
     const dataToSubmit: IQueueRequestBody = {
       clientsId: [1],
       subClientsId: [1],
       destinationId: 1,
-      deviceId: !data?.useSMS ? data?.deviceId || availableDevices?.[0]?.id : undefined,
-      useSMS: data?.useSMS || false,
-      prioritiesId: data?.priorities && data.priorities.length > 0 ? data.priorities : undefined,
-      driverName: data?.name,
-      driverPhonePrefix: data?.phonePrefix || "+351",
-      driverPhone: data?.phoneNumber,
-      carPlateNumber: data?.partySize || "1",
-      carBackPlateNumber: data?.estimatedTime || "",
-      observations: data?.observations,
-      id: data?.id,
+      deviceId: formik.values.useSMS ? undefined : formik.values.deviceId,
+      useSMS: formik.values.useSMS,
+      prioritiesId: formik.values.priorities,
+      driverName: formik.values.name,
+      driverPhonePrefix: formik.values.phoneNumber ? formik.values.phonePrefix : undefined,
+      driverPhone: formik.values.phoneNumber,
+      carPlateNumber: formik.values.partySize,
+      carBackPlateNumber: formik.values.estimatedTime,
+      observations: formik.values.observations,
+      id: formik.values.id,
     };
 
-    isEditQueue ? updateQueue(dataToSubmit) : addQueue(dataToSubmit);
+    const cleanDataToSubmit = getCleanData(dataToSubmit);
+
+    isEditQueue ? updateQueue(cleanDataToSubmit) : addQueue(cleanDataToSubmit);
   }
 
   async function handleVerifyCode() {
     const codeBodyRequest = {
-      id: codeId,
-      phoneNumberPrefix: data?.phonePrefix || "+351",
-      phoneNumber: data?.phoneNumber,
-      passCode: data?.verifyCode,
+      id: codeId.value,
+      phoneNumberPrefix: formik.values.phonePrefix,
+      phoneNumber: formik.values.phoneNumber,
+      passCode: formik.values.verifyCode,
       // translateTo: data?.locale,
     };
 
-    if (codeId) {
+    if (codeId.value) {
       try {
         const response = await axiosInstance.put(`phoneverification/verify`, codeBodyRequest);
         if (response?.data?.isValid) {
-          setIsCodeVerified(true);
-          setCountdown(0);
+          isCodeVerified.value = true;
+          countdown.value = 0;
           alert.value = { success: t("GLOBAL_SUCCESS_MESSAGE") };
           return;
         }
-        setIsCodeVerified(false);
+        isCodeVerified.value = false;
         alert.value = { error: t("GLOBAL_ERROR_MESSAGE") };
         return;
       } catch (error: any) {
-        setIsCodeVerified(false);
+        isCodeVerified.value = false;
         alert.value = { error: t("GLOBAL_ERROR_MESSAGE") };
         return;
       }
@@ -110,8 +118,8 @@ export default function RightDrawer() {
 
     try {
       const response = await axiosInstance.post(`phoneverification/generate`, codeBodyRequest);
-      setCodeId(response?.data?.id);
-      setCountdown(120);
+      codeId.value = response?.data?.id;
+      countdown.value = 120;
       alert.value = { success: t("GLOBAL_SUCCESS_MESSAGE") };
       return;
     } catch (error: any) {
@@ -132,43 +140,46 @@ export default function RightDrawer() {
       <Drawer className="rightDrawer" anchor="right" variant="persistent" open={sideDrawerOpen.value}>
         <Typography variant="h6" className="drawerTitle">
           {isEditQueue
-            ? `${t("FORM_LABEL_ARRIVED_AT")} ${data?.createdDate?.split("T")?.[1]?.slice(0, -3)}`
+            ? `${t("FORM_LABEL_ARRIVED_AT")} ${cardData.value?.createdDate?.split("T")?.[1]?.slice(0, -3)}`
             : t("FORM_LABEL_ADD_TO_QUEUE")}
         </Typography>
 
-        <Box component="form" autoComplete="off">
+        <Box component="form" autoComplete="off" onSubmit={formik.handleSubmit}>
           <FormControlLabel
-            inputMode="none"
+            id="useSMS"
             name="useSMS"
+            inputMode="none"
             label={t("FORM_LABEL_USE_SMS")}
             labelPlacement="start"
             control={<Switch color="primary" />}
-            value={data?.useSMS || (!isEditQueue && availableDevices?.length === 0) ? true : false}
-            checked={data?.useSMS || (!isEditQueue && availableDevices?.length === 0) ? true : false}
-            onChange={(_event, checked) => handleChange("useSMS", checked)}
-            disabled={isEditQueue || (!isEditQueue && availableDevices?.length === 0)}
+            value={formik.values.useSMS || (!isEditQueue && availableDevices.value?.length === 0) ? true : false}
+            checked={formik.values.useSMS || (!isEditQueue && availableDevices.value?.length === 0) ? true : false}
+            onChange={(_event, checked) => formik.setFieldValue("useSMS", checked)}
+            disabled={isEditQueue || (!isEditQueue && availableDevices.value?.length === 0)}
           />
 
           <TextField
+            id="name"
+            name="name"
             fullWidth
             variant="outlined"
             type="text"
             inputProps={{ inputMode: "text" }}
-            name="name"
             label={t("FORM_LABEL_NAME")}
-            value={data?.name || ""}
-            onChange={(e) => handleChange("name", e.target.value?.replace(/[^A-Za-z\s]/g, "")?.slice(0, 50))}
+            value={formik.values.name}
+            onChange={(e) => formik.setFieldValue("name", e.target.value?.replace(/[^A-Za-z\s]/g, "")?.slice(0, 50))}
           />
 
           <TextField
+            id="partySize"
+            name="partySize"
             fullWidth
             variant="outlined"
             type="text"
             inputProps={{ inputMode: "decimal" }}
-            name="partySize"
             label={t("FORM_LABEL_PARTY_SIZE")}
-            value={data?.partySize || ""}
-            onChange={(e) => handleChange("partySize", e.target.value?.replace(/\D/g, "")?.slice(0, 3))}
+            value={formik.values.partySize}
+            onChange={(e) => formik.setFieldValue("partySize", e.target.value?.replace(/\D/g, "")?.slice(0, 3))}
           />
 
           <div className="formPhoneContainer">
@@ -177,9 +188,11 @@ export default function RightDrawer() {
               fullWidth
               inputMode="none"
               options={phonePrefixs?.map((prefix) => prefix.id)}
-              value={data?.phonePrefix || "+351"}
-              onChange={(_event, value) => handleChange("phonePrefix", value)}
-              renderInput={(params) => <TextField {...params} type="text" name="phonePrefix" label={t("FORM_LABEL_PREFIX")} />}
+              value={formik.values.phonePrefix}
+              onChange={(_, value) => formik.setFieldValue("phonePrefix", value)}
+              renderInput={(params) => (
+                <TextField {...params} type="text" id="phonePrefix" name="phonePrefix" label={t("FORM_LABEL_PREFIX")} />
+              )}
               renderOption={(props, option) => {
                 return (
                   <li {...props} key={option}>
@@ -187,23 +200,24 @@ export default function RightDrawer() {
                   </li>
                 );
               }}
-              disabled={(isEditQueue && data?.useSMS) || isCodeVerified === true}
+              disabled={(isEditQueue && formik.values.useSMS) || isCodeVerified.value === true}
             />
 
             <TextField
+              id="phoneNumber"
+              name="phoneNumber"
               fullWidth
               variant="outlined"
               type="text"
               inputProps={{ inputMode: "tel" }}
-              name="phoneNumber"
               label={t("FORM_LABEL_PHONE_NUMBER")}
-              value={data?.phoneNumber || ""}
-              onChange={(e) => handleChange("phoneNumber", e.target.value?.replace(/\D/g, "")?.slice(0, 11))}
-              disabled={(isEditQueue && data?.useSMS) || isCodeVerified === true}
+              value={formik.values.phoneNumber}
+              onChange={(e) => formik.setFieldValue("phoneNumber", e.target.value?.replace(/\D/g, "")?.slice(0, 11))}
+              disabled={(isEditQueue && formik.values.useSMS) || isCodeVerified.value === true}
             />
           </div>
 
-          {data?.useSMS || availableDevices?.length === 0
+          {formik.values.useSMS || availableDevices.value?.length === 0
             ? !isEditQueue && (
                 <div className="formPhoneContainer">
                   <Button
@@ -211,50 +225,50 @@ export default function RightDrawer() {
                     variant="outlined"
                     onClick={handleVerifyCode}
                     disabled={
-                      data?.phoneNumber == undefined ||
-                      data?.phonePrefix?.length === 0 ||
-                      data?.phoneNumber?.length === 0 ||
-                      (codeId && !data?.verifyCode) ||
-                      (data?.verifyCode && data?.verifyCode?.length < 6) ||
-                      isCodeVerified === true
+                      formik.values.phoneNumber == undefined ||
+                      formik.values.phonePrefix?.length === 0 ||
+                      formik.values.phoneNumber?.length === 0 ||
+                      (codeId.value && !formik.values.verifyCode) ||
+                      (formik.values.verifyCode && formik.values.verifyCode?.length < 6) ||
+                      isCodeVerified.value === true
                     }
-                    className={isCodeVerified === true ? "verified" : isCodeVerified === false ? "unverified" : undefined}
+                    className={isCodeVerified.value === true ? "verified" : isCodeVerified.value === false ? "unverified" : undefined}
                   >
-                    {isCodeVerified
+                    {isCodeVerified.value
                       ? t("FORM_LABEL_VERIFIED")
-                      : codeId
-                      ? `${t("FORM_LABEL_VERIFY")} (${countdown})`
+                      : codeId.value
+                      ? `${t("FORM_LABEL_VERIFY")} (${countdown.value})`
                       : t("FORM_LABEL_GET_CODE")}
                   </Button>
                   <TextField
+                    id="verifyCode"
+                    name="verifyCode"
                     fullWidth
                     type="text"
                     inputProps={{ inputMode: "decimal" }}
                     variant="outlined"
-                    name="verifyCode"
                     label={t("FORM_LABEL_VERIFY_CODE")}
-                    value={data?.verifyCode || ""}
-                    onChange={(e) => handleChange("verifyCode", e.target.value?.replace(/\D/g, "")?.slice(0, 6))}
-                    disabled={!codeId || isCodeVerified === true}
+                    value={formik.values.verifyCode}
+                    onChange={(e) => formik.setFieldValue("verifyCode", e.target.value?.replace(/\D/g, "")?.slice(0, 6))}
+                    disabled={!codeId.value || isCodeVerified.value === true}
                   />
                 </div>
               )
-            : ((availableDevices && availableDevices.length > 0) || (isEditQueue && data?.deviceId)) && (
+            : ((availableDevices.value && availableDevices.value.length > 0) || (isEditQueue && formik.values.deviceId)) && (
                 <Autocomplete
                   disableClearable
                   fullWidth
                   inputMode="none"
                   options={
                     isEditQueue
-                      ? [
-                          companyConfigs.value?.formFieldsData?.devices?.find((device) => device.id === data?.deviceId)?.id,
-                          ...(availableDevices?.map((device) => device.id) || []),
-                        ] || []
-                      : availableDevices?.map((device) => device.id) || []
+                      ? [formik.values.deviceId, ...(availableDevices.value?.map((device) => device.id) || [])]
+                      : availableDevices.value?.map((device) => device.id) || []
                   }
-                  value={data?.deviceId || availableDevices?.[0]?.id}
-                  onChange={(_event, value) => handleChange("deviceId", value)}
-                  renderInput={(params) => <TextField {...params} type="text" name="device" label={t("FORM_LABEL_DEVICE")} required />}
+                  value={formik.values.deviceId as NonNullable<number | null>}
+                  onChange={(_, value) => formik.setFieldValue("deviceId", value)}
+                  renderInput={(params) => (
+                    <TextField {...params} type="text" id="deviceId" name="deviceId" label={t("FORM_LABEL_DEVICE")} required />
+                  )}
                   getOptionLabel={(option) => `${option}`}
                   renderOption={(props, option) => {
                     return (
@@ -273,9 +287,11 @@ export default function RightDrawer() {
             multiple
             inputMode="none"
             options={companyConfigs.value?.formFieldsData?.priorities?.map((priority) => priority.id) || []}
-            value={data?.priorities || []}
-            onChange={(_event, value) => handleChange("priorities", value)}
-            renderInput={(params) => <TextField {...params} type="text" name="priorities" label={t("FORM_LABEL_PRIORITIES")} />}
+            value={formik.values.priorities}
+            onChange={(_, value) => formik.setFieldValue("priorities", value)}
+            renderInput={(params) => (
+              <TextField {...params} type="text" id="priorities" name="priorities" label={t("FORM_LABEL_PRIORITIES")} />
+            )}
             getOptionLabel={(option) =>
               t(companyConfigs.value?.formFieldsData?.priorities?.find((priority) => priority.id === option)?.label || "")
             }
@@ -289,14 +305,15 @@ export default function RightDrawer() {
           />
 
           <TextField
+            id="observations"
+            name="observations"
             fullWidth
             variant="outlined"
             type="text"
             inputProps={{ inputMode: "text" }}
-            name="observations"
             label={t("FORM_LABEL_OBSERVATIONS")}
-            value={data?.observations || ""}
-            onChange={(e) => handleChange("observations", e.target.value)}
+            value={formik.values.observations}
+            onChange={formik.handleChange}
           />
 
           <Autocomplete
@@ -304,10 +321,16 @@ export default function RightDrawer() {
             fullWidth
             inputMode="none"
             options={["", "0", "15", "30", "60"]}
-            value={data?.estimatedTime || ""}
-            onChange={(_event, value) => handleChange("estimatedTime", value)}
+            value={formik.values.estimatedTime}
+            onChange={(_, value) => formik.setFieldValue("estimatedTime", value)}
             renderInput={(params) => (
-              <TextField {...params} type="text" name="estimatedTime" label={t("FORM_LABEL_ESTIMATED_TIME_IN_MIN")} />
+              <TextField
+                {...params}
+                type="text"
+                id="estimatedTime"
+                name="estimatedTime"
+                label={t("FORM_LABEL_ESTIMATED_TIME_IN_MIN")}
+              />
             )}
             renderOption={(props, option) => {
               if (option?.length > 0)
@@ -322,8 +345,8 @@ export default function RightDrawer() {
           <Button
             id="formSubmitButton"
             variant="contained"
-            onClick={handleSubmit}
-            disabled={data?.useSMS && (!data?.phoneNumber || data?.phoneNumber?.length === 0)}
+            type="submit"
+            disabled={formik.values.useSMS && (!formik.values.phoneNumber || formik.values.phoneNumber?.length === 0)}
           >
             {isEditQueue ? t("FORM_LABEL_SAVE") : t("FORM_LABEL_ADD")}
           </Button>

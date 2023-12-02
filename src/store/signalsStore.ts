@@ -1,6 +1,6 @@
 import { signal } from "@preact/signals-react";
 import { TQueueCardSize } from "./types";
-import { InCompanyConfigs } from "../services/api/dtos/CompanyConfigs";
+import { InCompanyConfigs, InInputConfigs } from "../services/api/dtos/CompanyConfigs";
 import { ITransformedInQueueData } from "../pages/Home/utils/transformInQueueData";
 import { KeycloakTokenParsed } from "keycloak-js";
 import { PaletteMode } from "@mui/material";
@@ -38,3 +38,13 @@ export const notificationDrawerOpen = signal(false);
 export const alert = signal<{ [key: string]: string } | null>(null);
 
 export const cardData = signal<ITransformedInQueueData | null>(null);
+
+export const message = signal("");
+
+export const countdown = signal<number>(0);
+
+export const isCodeVerified = signal<boolean | null>(null);
+
+export const codeId = signal<number | null>(null);
+
+export const availableDevices = signal<InInputConfigs[] | undefined>(undefined);

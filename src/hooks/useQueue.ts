@@ -7,7 +7,7 @@ export interface IQueueRequestBody {
   clientsId: number[];
   subClientsId: number[];
   destinationId: number;
-  deviceId?: number | string;
+  deviceId?: number | string | null;
   carPlateNumber: string;
   carBackPlateNumber?: string;
   driverName?: string;
@@ -16,7 +16,7 @@ export interface IQueueRequestBody {
   prioritiesId?: number[];
   observations?: string;
   useSMS: boolean;
-  id?: number;
+  id?: number | null;
 }
 
 export interface INotifyQueueRequestBody {

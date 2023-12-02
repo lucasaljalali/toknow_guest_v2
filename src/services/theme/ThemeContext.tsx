@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { PaletteMode, useMediaQuery } from "@mui/material";
-import { user } from "../../store/signalsStore";
+import { themeMode, user } from "../../store/signalsStore";
 
 type Props = { children: React.ReactNode };
 
@@ -98,11 +98,9 @@ const getDesignTokens = (mode: PaletteMode) => ({
 });
 
 export function ThemeContext({ children }: Props) {
-  const [themeMode, setThemeMode] = useState<PaletteMode>("light");
-
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
 
-  const theme = useMemo(() => createTheme(getDesignTokens(themeMode)), [themeMode]);
+  const theme = createTheme(getDesignTokens(themeMode.value));
 
   useEffect(() => {
     // const userDefaultTheme = currentUser?.defaultTheme && currentUser.defaultTheme === Theme.DARK ? "dark" : "light";
@@ -112,11 +110,11 @@ export function ThemeContext({ children }: Props) {
     // }
 
     if (prefersDarkMode) {
-      setThemeMode("dark");
+      themeMode.value = "dark";
       return;
     }
 
-    setThemeMode("light");
+    themeMode.value = "light";
   }, [prefersDarkMode, user.value]);
 
   return <ThemeProvider theme={theme}>{children}</ThemeProvider>;

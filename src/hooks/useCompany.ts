@@ -1,6 +1,6 @@
 import { useQuery } from "react-query";
 import { axiosInstance } from "../services/api/axiosInstance";
-import { companyConfigs } from "../store/signalsStore";
+import { availableDevices, companyConfigs } from "../store/signalsStore";
 
 export default function useCompany() {
   return useQuery(["configs"], {
@@ -13,6 +13,7 @@ export default function useCompany() {
     retryDelay: 5000,
     onSuccess: (data) => {
       companyConfigs.value = data;
+      availableDevices.value = companyConfigs.value?.formFieldsData?.devices?.filter((device) => device.isAvailable === true);
     },
   });
 }
