@@ -116,7 +116,7 @@ export default function SwipeableCard({ data }: ISwipeableCard) {
         ref={cardRef}
         id={String(transformedData?.id)}
         className="allCardsTypesContainer"
-        style={{ touchAction: "pan-y" }}
+        style={{ touchAction: "pan-y", boxShadow: queueCardSize.value === "small" ? "none" : undefined }}
         {...bind()}
       >
         <QueueCard key={transformedData?.id} data={transformedData} />
