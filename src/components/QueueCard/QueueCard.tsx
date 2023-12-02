@@ -3,7 +3,7 @@ import { ITransformedInQueueData } from "../../pages/Home/utils/transformInQueue
 import { Button, Typography } from "@mui/material";
 import { useQueue } from "../../hooks/useQueue";
 import { InQueueItem } from "../../services/api/dtos/Queue";
-import { notificationDrawerOpen, queueCardSize } from "../../store/signalsStore";
+import { isDragging, notificationDrawerOpen, queueCardSize } from "../../store/signalsStore";
 import DeviceIcon from "../DeviceIcon/DeviceIcon";
 
 interface IQueueLongCard {
@@ -20,8 +20,10 @@ export default function QueueCard({ data }: IQueueLongCard) {
   function handleDeviceMouseDown(event: MouseEvent | TouchEvent) {
     if (event.type === "mousedown" || event.type === "touchstart") {
       pressTimer = setTimeout(() => {
-        notificationDrawerOpen.value = !notificationDrawerOpen.value;
-        pressTimer = null;
+        if (isDragging.value === false) {
+          notificationDrawerOpen.value = !notificationDrawerOpen.value;
+          pressTimer = null;
+        }
       }, longPressThreshold);
     }
   }

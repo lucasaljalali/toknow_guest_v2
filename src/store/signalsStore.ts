@@ -48,3 +48,5 @@ export const isCodeVerified = signal<boolean | null>(null);
 export const codeId = signal<number | null>(null);
 
 export const availableDevices = signal<InInputConfigs[] | undefined>(undefined);
+
+export const isDragging = signal<boolean>(false);

@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { transformInQueueData } from "../../pages/Home/utils/transformInQueueData";
 import { InQueueItem } from "../../services/api/dtos/Queue";
 import { useGesture } from "@use-gesture/react";
-import { cardData, filtersOpen, queueCardSize, sideDrawerOpen, windowWidth } from "../../store/signalsStore";
+import { cardData, filtersOpen, isDragging, queueCardSize, sideDrawerOpen, windowWidth } from "../../store/signalsStore";
 import { useQueue } from "../../hooks/useQueue";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import QueueCard from "../QueueCard/QueueCard";
@@ -57,6 +57,8 @@ export default function SwipeableCard({ data }: ISwipeableCard) {
       },
 
       onDrag: ({ movement: [dx], last }) => {
+        if (isDragging.value === false) isDragging.value = true;
+
         const cardWidth = cardRef.current?.clientWidth || window.innerWidth;
         const isToRemoveDivider = queueCardSize.value === "small" ? 1.5 : 4;
         const isToRemoveLeft = dx < -cardWidth / isToRemoveDivider;
@@ -75,6 +77,7 @@ export default function SwipeableCard({ data }: ISwipeableCard) {
           cardRef.current.style.transform = `translateX(${dx}px)`;
 
           if (last) {
+            isDragging.value = false;
             if (isToRemoveLeft || isToRemoveRight) {
               if (transformedData?.id) {
                 const dataToSubmit = {
