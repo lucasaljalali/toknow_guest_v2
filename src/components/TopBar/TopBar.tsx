@@ -89,6 +89,8 @@ export default function TopBar() {
     };
 
     addQueue(dataToSubmit);
+
+    setDevicesOpen(false);
   }
 
   function handleMouseMove(event: MouseEvent) {
