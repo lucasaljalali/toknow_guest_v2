@@ -4,9 +4,10 @@ import { useQueue } from "../../hooks/useQueue";
 import { cardData, companyConfigs, message, notificationDrawerOpen } from "../../store/signalsStore";
 import { effect } from "@preact/signals-react";
 import { messageMaxLength } from "../../store/constants";
+import LoadingMask from "../LoadingMask/LoadingMask";
 
 export default function NotificationDrawer() {
-  const { notifyQueue } = useQueue();
+  const { notifyQueue, isLoading } = useQueue();
 
   const { t } = useTranslation();
 
@@ -33,6 +34,8 @@ export default function NotificationDrawer() {
   return (
     <ClickAwayListener onClickAway={() => (notificationDrawerOpen.value = false)}>
       <Drawer className="rightDrawer" anchor="right" variant="persistent" open={notificationDrawerOpen.value}>
+        {isLoading && <LoadingMask />}
+
         <Typography variant="h6" className="drawerTitle">
           {t("FORM_LABEL_SEND_MESSAGE")}
         </Typography>

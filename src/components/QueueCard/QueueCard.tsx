@@ -14,6 +14,9 @@ export default function QueueCard({ data }: IQueueLongCard) {
   const { notifyQueue } = useQueue();
   const doubleTouchThreshold = 300;
   const longPressThreshold = 2000;
+
+  const notifiedTimes = data?.history?.filter((item) => item?.actionId === 2)?.length;
+
   let firstTouchTimestamp = 0;
   let pressTimer: number | null = null;
 
@@ -134,7 +137,8 @@ export default function QueueCard({ data }: IQueueLongCard) {
             time={queueCardSize.value === "small" ? data?.waitingTimeInMinutes : data?.lastNotificationTimeInMinutes}
             useSMS={data?.useSMS}
             deviceLabel={data?.deviceLabel}
-            notifed={data?.notifed}
+            notified={data?.notifed}
+            notifiedTimes={notifiedTimes}
           ></DeviceIcon>
         </Button>
       </div>

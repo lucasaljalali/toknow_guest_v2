@@ -2,6 +2,7 @@ import { axiosInstance } from "../services/api/axiosInstance";
 import { UseMutateFunction, useMutation, useQuery, useQueryClient } from "react-query";
 import { InQueueItem } from "../services/api/dtos/Queue";
 import { companyConfigs, notificationDrawerOpen, sideDrawerOpen } from "../store/signalsStore";
+import { handleRepeatLastNotifications } from "../pages/Home/utils/handleRepeatLastNotifications";
 
 export interface IQueueRequestBody {
   clientsId: number[];
@@ -39,7 +40,10 @@ export function useQueue() {
   const { data: queue, isLoading: isQueueLoading } = useQuery(["queue"], {
     queryFn: async () => {
       const response = await axiosInstance?.get("queues");
-      return response?.data.data as InQueueItem[];
+      const respondeData = response?.data.data;
+      const reNotificationIntervalInMin = companyConfigs.value?.scheduleMinDurationInMinutes;
+      reNotificationIntervalInMin && handleRepeatLastNotifications(respondeData, reNotificationIntervalInMin, notifyQueue);
+      return respondeData as InQueueItem[];
     },
     enabled: companyConfigs.value !== null,
     retry: true,

@@ -4,8 +4,6 @@
 
 //TODO: simplify deviceIcon clics functionality (maybe useGesture)
 
-//TODO: move deviceIcon clicks functionality to index file and pass as prop to card then to deviceIcon
-
-//TODO: implement zod and formik on forms
-
 //TODO: implement repager functionality if client still in queue after beeing notified in configurated interval
+
+//TODO: implement db logo instead hard coded logo
