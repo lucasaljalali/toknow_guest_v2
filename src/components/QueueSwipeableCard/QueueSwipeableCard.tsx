@@ -27,7 +27,8 @@ export default function SwipeableCard({ data }: ISwipeableCard) {
       onTouchStart: () => (cardData.value = transformedData),
       onClick: ({ event }) => {
         event.preventDefault();
-        event.stopPropagation();
+
+        if (sideDrawerOpen.value) event.stopPropagation();
 
         if (filtersOpen.value === true) {
           filtersOpen.value = false;

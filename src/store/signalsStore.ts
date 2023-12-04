@@ -50,3 +50,7 @@ export const codeId = signal<number | null>(null);
 export const availableDevices = signal<InInputConfigs[] | undefined>(undefined);
 
 export const isDragging = signal<boolean>(false);
+
+export const devicesOpen = signal(false);
+
+export const devicesOpenScrolling = signal(false);

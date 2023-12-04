@@ -1,7 +1,7 @@
 import { Box, Button, ClickAwayListener, Drawer, TextField, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useQueue } from "../../hooks/useQueue";
-import { cardData, companyConfigs, message, notificationDrawerOpen, sideDrawerOpen } from "../../store/signalsStore";
+import { cardData, companyConfigs, message, notificationDrawerOpen } from "../../store/signalsStore";
 import { effect } from "@preact/signals-react";
 import { messageMaxLength } from "../../store/constants";
 
@@ -27,7 +27,6 @@ export default function NotificationDrawer() {
   effect(() => {
     if (notificationDrawerOpen.value === false) {
       if (message.value !== "") message.value = "";
-      if (sideDrawerOpen.value === false) cardData.value = null;
     }
   });
 

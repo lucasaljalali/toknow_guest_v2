@@ -1,10 +1,18 @@
-import { MouseEvent, TouchEvent, useEffect, useRef, useState } from "react";
+import { MouseEvent, TouchEvent, useRef } from "react";
 import { Button, IconButton, Typography } from "@mui/material";
 import { useQueue } from "../../hooks/useQueue";
 import { useTranslation } from "react-i18next";
 import { ClickAwayListener } from "@mui/base/ClickAwayListener";
 import { useGesture } from "@use-gesture/react";
-import { companyConfigs, queueCardSize, sideDrawerOpen, windowWidth } from "../../store/signalsStore";
+import {
+  companyConfigs,
+  devicesOpen,
+  queueCardSize,
+  devicesOpenScrolling,
+  sideDrawerOpen,
+  windowWidth,
+  notificationDrawerOpen,
+} from "../../store/signalsStore";
 import { TQueueCardSize } from "../../store/types";
 import { useQueryClient } from "react-query";
 import { InQueueItem } from "../../services/api/dtos/Queue";
@@ -21,8 +29,6 @@ import Loading from "../Loading/Loading";
 import useCompany from "../../hooks/useCompany";
 
 export default function TopBar() {
-  const [devicesOpen, setDevicesOpen] = useState(false);
-  const [scrolling, setScrolling] = useState(false);
   const { addQueue, isLoading: isQueueLoading } = useQueue();
   const { isLoading: isConfigLoading } = useCompany();
   const { t } = useTranslation();
@@ -49,7 +55,7 @@ export default function TopBar() {
       if (pressTimerRef.current !== null) {
         if (pressTimerRef.current < longPressDuration) {
           // Fast click
-          setDevicesOpen((prev) => !prev);
+          devicesOpen.value = !devicesOpen.value;
           if (sideDrawerOpen.value === true) sideDrawerOpen.value = false;
         }
         clearTimeout(pressTimerRef.current);
@@ -63,10 +69,6 @@ export default function TopBar() {
       }
     },
   });
-
-  useEffect(() => {
-    setScrolling(false);
-  }, [devicesOpen]);
 
   function logout() {
     keycloak.logout();
@@ -90,13 +92,14 @@ export default function TopBar() {
 
     addQueue(dataToSubmit);
 
-    setDevicesOpen(false);
+    devicesOpen.value = false;
   }
 
   function handleMouseMove(event: MouseEvent) {
+    //workaround for scrolling not working properly
     const container = document.querySelector(".topBarDevicesOptionsContainer");
 
-    if (container && scrolling) {
+    if (container && devicesOpenScrolling.value) {
       container.scrollLeft -= event.movementX;
     }
   }
@@ -121,7 +124,7 @@ export default function TopBar() {
 
       <div className="topBarContainer">
         <div className="buttonsContainer">
-          <ClickAwayListener onClickAway={() => setDevicesOpen(false)}>
+          <ClickAwayListener onClickAway={() => (devicesOpen.value = false)}>
             <IconButton className="addDeviceButton" {...bindAddIcon()} disabled={isLoading}>
               {isLoading ? <Loading size={1.5} /> : <AddIcon />}
             </IconButton>
@@ -131,12 +134,12 @@ export default function TopBar() {
           </IconButton> */}
 
           <div
-            className={devicesOpen ? "topBarDevicesOptionsContainer active" : "topBarDevicesOptionsContainer"}
+            className={devicesOpen.value ? "topBarDevicesOptionsContainer active" : "topBarDevicesOptionsContainer"}
             onClick={(e) => e.stopPropagation()}
             onTouchStart={(e) => e.stopPropagation()}
             onTouchEnd={(e) => e.stopPropagation()}
-            onMouseDown={() => setScrolling(true)}
-            onMouseUp={() => setScrolling(false)}
+            onMouseDown={() => (devicesOpenScrolling.value = true)}
+            onMouseUp={() => (devicesOpenScrolling.value = false)}
             onMouseMove={handleMouseMove}
           >
             {noAvailableDevices && <Typography color={"text.primary"}>{t("GLOBAL_NO_AVAILABLE_OPTIONS")}</Typography>}
@@ -149,8 +152,8 @@ export default function TopBar() {
                     id={`${device?.id}`}
                     className="topBarAddDeviceButton"
                     onClick={(e) => handleDeviceClick(e, device?.id)}
-                    onMouseDown={() => setScrolling(true)}
-                    onMouseUp={() => setScrolling(false)}
+                    onMouseDown={() => (devicesOpenScrolling.value = true)}
+                    onMouseUp={() => (devicesOpenScrolling.value = false)}
                     onMouseMove={handleMouseMove}
                   >
                     <DeviceIcon deviceLabel={device?.id} />
@@ -161,7 +164,12 @@ export default function TopBar() {
           </div>
         </div>
 
-        <img onClick={logout} src={continenteLogo} className="mainLogo" style={{ display: sideDrawerOpen.value ? "none" : "block" }} />
+        <img
+          onClick={logout}
+          src={continenteLogo}
+          className="mainLogo"
+          style={{ display: sideDrawerOpen.value || notificationDrawerOpen.value ? "none" : "block" }}
+        />
 
         <div className="buttonsContainer">
           <IconButton className="roundedSecondaryIconButton defaultCursor">

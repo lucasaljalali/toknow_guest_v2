@@ -39,6 +39,7 @@ export default function QueueCard({ data }: IQueueLongCard) {
 
   function handleDeviceClick(event: MouseEvent | TouchEvent, data: InQueueItem | null) {
     event.preventDefault();
+    event.stopPropagation();
 
     if (event.type === "mouseup" || event.type === "touchend") {
       if (pressTimer) {
