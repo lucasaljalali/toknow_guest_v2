@@ -4,6 +4,4 @@
 
 //TODO: simplify deviceIcon clics functionality (maybe useGesture)
 
-//TODO: implement repager functionality if client still in queue after beeing notified in configurated interval
-
 //TODO: implement db logo instead hard coded logo
