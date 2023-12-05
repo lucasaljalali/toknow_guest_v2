@@ -1,4 +1,15 @@
-import { Autocomplete, Box, Button, ClickAwayListener, Drawer, FormControlLabel, Switch, TextField, Typography } from "@mui/material";
+import {
+  Autocomplete,
+  Box,
+  Button,
+  ClickAwayListener,
+  Drawer,
+  FormControlLabel,
+  IconButton,
+  Switch,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { Key, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { phonePrefixs } from "../../configuration/phonePrefixs";
@@ -18,6 +29,7 @@ import { useFormik } from "formik";
 import { transformInQueueData } from "../../pages/Home/utils/transformInQueueData";
 import { initialValues, validationSchema } from "./utils/validationSchema";
 import { getCleanData } from "./utils/handleCleanData";
+import CloseIcon from "@mui/icons-material/Close";
 
 export default function RightDrawer() {
   const formik = useFormik({
@@ -155,11 +167,17 @@ export default function RightDrawer() {
           open={sideDrawerOpen.value}
           onClose={handleRemoveCardsSelectionBorder}
         >
-          <Typography variant="h6" className="drawerTitle">
-            {isEditQueue
-              ? `${t("FORM_LABEL_ARRIVED_AT")} ${cardData.value?.createdDate?.split("T")?.[1]?.slice(0, -3)}`
-              : t("FORM_LABEL_ADD_TO_QUEUE")}
-          </Typography>
+          <div className="drawerTitle">
+            <IconButton onClick={handleCloseForm}>
+              <CloseIcon />
+            </IconButton>
+
+            <Typography variant="h6">
+              {isEditQueue
+                ? `${t("FORM_LABEL_ARRIVED_AT")} ${cardData.value?.createdDate?.split("T")?.[1]?.slice(0, -3)}`
+                : t("FORM_LABEL_ADD_TO_QUEUE")}
+            </Typography>
+          </div>
 
           <Box component="form" autoComplete="off" onSubmit={formik.handleSubmit}>
             <FormControlLabel

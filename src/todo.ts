@@ -2,6 +2,4 @@
 
 //TODO: insert name and phone on phone icon (any way to identify the client)
 
-//TODO: simplify deviceIcon clics functionality (maybe useGesture)
-
-//TODO: implement db logo instead hard coded logo
+//TODO: simplify deviceIcon clicks functionality (maybe useGesture)

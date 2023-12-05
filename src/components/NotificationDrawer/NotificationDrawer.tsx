@@ -1,10 +1,11 @@
-import { Box, Button, ClickAwayListener, Drawer, TextField, Typography } from "@mui/material";
+import { Box, Button, ClickAwayListener, Drawer, IconButton, TextField, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useQueue } from "../../hooks/useQueue";
-import { cardData, companyConfigs, message, notificationDrawerOpen } from "../../store/signalsStore";
+import { cardData, companyConfigs, message, notificationDrawerOpen, queueCardSize } from "../../store/signalsStore";
 import { effect } from "@preact/signals-react";
 import { messageMaxLength } from "../../store/constants";
 import LoadingMask from "../LoadingMask/LoadingMask";
+import CloseIcon from "@mui/icons-material/Close";
 
 export default function NotificationDrawer() {
   const { notifyQueue, isLoading } = useQueue();
@@ -12,6 +13,22 @@ export default function NotificationDrawer() {
   const { t } = useTranslation();
 
   const defaultMessages = companyConfigs.value?.formFieldsData?.defaultMessages;
+
+  let clickAwayCount = 0;
+
+  effect(() => {
+    if (notificationDrawerOpen.value === false) {
+      if (message.value !== "") message.value = "";
+    }
+  });
+
+  function handleClickAway() {
+    clickAwayCount++;
+    if (queueCardSize.value === "small" && clickAwayCount < 2) {
+      return;
+    }
+    notificationDrawerOpen.value = false;
+  }
 
   function handleSubmit(messageId?: number | string) {
     if (cardData.value?.id) {
@@ -25,20 +42,18 @@ export default function NotificationDrawer() {
     }
   }
 
-  effect(() => {
-    if (notificationDrawerOpen.value === false) {
-      if (message.value !== "") message.value = "";
-    }
-  });
-
   return (
-    <ClickAwayListener onClickAway={() => (notificationDrawerOpen.value = false)}>
+    <ClickAwayListener onClickAway={handleClickAway}>
       <Drawer className="rightDrawer" anchor="right" variant="persistent" open={notificationDrawerOpen.value}>
         {isLoading && <LoadingMask />}
 
-        <Typography variant="h6" className="drawerTitle">
-          {t("FORM_LABEL_SEND_MESSAGE")}
-        </Typography>
+        <div className="drawerTitle">
+          <IconButton onClick={() => (notificationDrawerOpen.value = false)}>
+            <CloseIcon />
+          </IconButton>
+
+          <Typography variant="h6">{t("FORM_LABEL_SEND_MESSAGE")}</Typography>
+        </div>
 
         <Box component="form" autoComplete="off">
           <TextField

@@ -3,9 +3,9 @@ import { queueCardSize } from "../../store/signalsStore";
 import { useEffect } from "react";
 import { useQueue } from "../../hooks/useQueue";
 import { useQueryClient } from "react-query";
+import { filterQueue } from "../../pages/Home/utils/handleFilterQueue";
 import SwipeableCard from "../QueueSwipeableCard/QueueSwipeableCard";
 import Loading from "../Loading/Loading";
-import { filterQueue } from "../../pages/Home/utils/handleFilterQueue";
 
 export default function Queue() {
   const { queue, isLoading } = useQueue();

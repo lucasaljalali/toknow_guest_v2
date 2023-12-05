@@ -2,7 +2,15 @@ import { useRef } from "react";
 import { transformInQueueData } from "../../pages/Home/utils/transformInQueueData";
 import { InQueueItem } from "../../services/api/dtos/Queue";
 import { useGesture } from "@use-gesture/react";
-import { cardData, filtersOpen, isDragging, queueCardSize, sideDrawerOpen, windowWidth } from "../../store/signalsStore";
+import {
+  cardData,
+  filtersOpen,
+  isDragging,
+  notificationDrawerOpen,
+  queueCardSize,
+  sideDrawerOpen,
+  windowWidth,
+} from "../../store/signalsStore";
 import { useQueue } from "../../hooks/useQueue";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import QueueCard from "../QueueCard/QueueCard";
@@ -26,6 +34,7 @@ export default function SwipeableCard({ data }: ISwipeableCard) {
       onMouseDown: () => (cardData.value = transformedData),
       onTouchStart: () => (cardData.value = transformedData),
       onClick: ({ event }) => {
+        console.log("click");
         event.preventDefault();
 
         if (sideDrawerOpen.value) event.stopPropagation();
@@ -38,8 +47,10 @@ export default function SwipeableCard({ data }: ISwipeableCard) {
         }
       },
       onTouchEnd: ({ event }) => {
+        console.log("touchEnd");
         event.preventDefault();
-        event.stopPropagation();
+        queueCardSize.value !== "small" && event.stopPropagation();
+
         if (firstTouchTimestamp === 0) {
           firstTouchTimestamp = event.timeStamp;
         } else {
@@ -58,6 +69,8 @@ export default function SwipeableCard({ data }: ISwipeableCard) {
       },
 
       onDrag: ({ movement: [dx], last }) => {
+        if (sideDrawerOpen.value || notificationDrawerOpen.value) return;
+
         if (isDragging.value === false) isDragging.value = true;
 
         const cardWidth = cardRef.current?.clientWidth || window.innerWidth;

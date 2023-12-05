@@ -190,7 +190,7 @@ a {
 .queueList:is(.small) {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .queueOrdinationContainer {
@@ -242,6 +242,7 @@ a {
 .queueHiddenTrashContainer:is(.small) {
   aspect-ratio: 1/1;
   transition: none;
+  margin: .25rem;
 }
 
 .allCardsTypesContainer {
@@ -464,6 +465,7 @@ a {
 }
 
 .drawerTitle {
+  position: relative;
   background: var(--background-color-secondary);
   color: var(--text-color);
   width: 100%;
@@ -471,6 +473,13 @@ a {
   padding: .5rem 2rem;
   border-top-left-radius: inherit;
   box-shadow: var(--shadow-light);
+}
+
+.drawerTitle button {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translate(1rem,-50%);
 }
 
 #verifyCodeButton {
@@ -597,6 +606,7 @@ a {
     margin-bottom: .5rem;
     background: var(--background-color-terciary);
     box-shadow: var(--shadow-light);
+    min-height: 1.75rem;
   }
 
   .smallScreenMainLogo {
@@ -607,5 +617,4 @@ a {
   .queueHiddenTrashContainer:is(.medium) {
     width: 100%;
   }
-  
 }

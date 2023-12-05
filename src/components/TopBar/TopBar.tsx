@@ -20,9 +20,6 @@ import keycloak from "../../services/auth/keycloak";
 import AddIcon from "@mui/icons-material/Add";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 // import QrCodeIcon from "@mui/icons-material/QrCode";
-// import hanamiLogo from "../../assets/images/hanami.png";
-import continenteLogo from "../../assets/images/continente.png";
-// import auchanLogo from "../../assets/images/auchan.png"
 import DeviceIcon from "../DeviceIcon/DeviceIcon";
 import Filters from "../Filters/Filters";
 import Loading from "../Loading/Loading";
@@ -42,6 +39,7 @@ export default function TopBar() {
 
   const availableDevices = companyConfigs.value?.formFieldsData?.devices?.filter((device) => device.isAvailable);
   const noAvailableDevices = availableDevices?.length === 0;
+  const companyLogo = companyConfigs.value?.logoBase64;
 
   const bindAddIcon = useGesture({
     onPointerDown: () => {
@@ -119,7 +117,9 @@ export default function TopBar() {
   return (
     <>
       <div className="smallScreenMainLogoContainer">
-        <img onClick={logout} src={continenteLogo} className="smallScreenMainLogo" />
+        {companyLogo && (
+          <img alt="companyLogo" className="smallScreenMainLogo" src={`data:image;base64,${companyLogo}`} onClick={logout} />
+        )}
       </div>
 
       <div className="topBarContainer">
@@ -164,12 +164,15 @@ export default function TopBar() {
           </div>
         </div>
 
-        <img
-          onClick={logout}
-          src={continenteLogo}
-          className="mainLogo"
-          style={{ display: sideDrawerOpen.value || notificationDrawerOpen.value ? "none" : "block" }}
-        />
+        {companyLogo && (
+          <img
+            alt="companyLogo"
+            className="mainLogo"
+            src={`data:image;base64,${companyLogo}`}
+            style={{ display: sideDrawerOpen.value || notificationDrawerOpen.value ? "none" : "block" }}
+            onClick={logout}
+          />
+        )}
 
         <div className="buttonsContainer">
           <IconButton className="roundedSecondaryIconButton defaultCursor">
